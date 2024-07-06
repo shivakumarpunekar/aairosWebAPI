@@ -1,0 +1,6 @@
+@aairos_HostAddress = http://localhost:5144
+
+GET {{aairos_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
