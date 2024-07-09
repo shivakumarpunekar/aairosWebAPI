@@ -1,4 +1,5 @@
 ﻿using aairos.Data;
+using aairos.Handular;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -54,7 +55,11 @@ namespace aairos
                     });
             });
 
-            services.AddControllers();
+            services.AddControllers()
+            .AddJsonOptions(options =>
+             {
+                 options.JsonSerializerOptions.Converters.Add(new JsonDateConverter());
+             });
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });

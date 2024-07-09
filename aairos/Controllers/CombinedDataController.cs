@@ -62,5 +62,61 @@ namespace aairos.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<ActionResult> PostCombinedData([FromBody] CombinedDataViewModel combinedData)
+        {
+            try
+            {
+                var device = new aairos.Model.device
+                {
+                    // Assuming Device class has the same properties
+                    Id = combinedData.DeviceId,
+                    CreatedDate = combinedData.CreatedDate
+                };
+
+                var userProfileId = (await _userProfileContext.UserProfile.FirstOrDefaultAsync(u => u.UserName == combinedData.UserName))?.UserProfileId;
+
+                if (!userProfileId.HasValue)
+                {
+                    return BadRequest("User profile not found");
+                }
+
+                var deviceDetail = new aairos.Model.devicedetail
+                {
+                    DeviceId = combinedData.DeviceId,
+                    UserProfileId = userProfileId.Value,
+                    Sensor_1 = combinedData.Sensor_1,
+                    Sensor_2 = combinedData.Sensor_2,
+                    SolonoidVale = combinedData.SolonoidVale,
+                };
+
+                var userProfile = new aairos.Model.userprofile
+                {
+                    UserProfileId = userProfileId.Value,
+                    UserName = combinedData.UserName,
+                    MobileNumber = combinedData.MobileNumber
+                };
+
+                // Add data to the respective contexts
+                _deviceContext.device.Add(device);
+                _devicedetailContext.devicedetail.Add(deviceDetail);
+                _userProfileContext.UserProfile.Add(userProfile);
+
+                // Save changes to the database
+                await _deviceContext.SaveChangesAsync();
+                await _devicedetailContext.SaveChangesAsync();
+                await _userProfileContext.SaveChangesAsync();
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (implement logging as per your logging framework)
+                Console.WriteLine(ex.Message);
+
+                // Return a generic error message
+                return StatusCode(500, "An internal server error occurred.");
+            }
+        }
     }
 }
