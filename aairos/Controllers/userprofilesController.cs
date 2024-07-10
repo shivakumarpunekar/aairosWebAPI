@@ -31,7 +31,7 @@ namespace aairos.Controllers
         [HttpGet("byGuId/{guId}")]
         public async Task<ActionResult<userprofile>> GetUserProfileByGuId(string guId)
         {
-            var userprofile = await _context.UserProfile.FirstOrDefaultAsync(u => u.GuId == guId);
+            var userprofile = await _context.UserProfile.FirstOrDefaultAsync(u => u.ProfileGUID == guId);
 
             if (userprofile == null)
             {
@@ -82,7 +82,7 @@ namespace aairos.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Putuserprofile(int id, userprofile userprofile)
         {
-            if (id != userprofile.UserProfileId)
+            if (id != userprofile.ProfileID)
             {
                 return BadRequest();
             }
@@ -140,7 +140,7 @@ namespace aairos.Controllers
             _context.UserProfile.Add(userprofile);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(Getuserprofile), new { id = userprofile.UserProfileId }, userprofile);
+            return CreatedAtAction(nameof(Getuserprofile), new { id = userprofile.ProfileID }, userprofile);
         }
 
         // DELETE: api/userprofiles/5
@@ -161,7 +161,7 @@ namespace aairos.Controllers
 
         private bool userprofileExists(int id)
         {
-            return _context.UserProfile.Any(e => e.UserProfileId == id);
+            return _context.UserProfile.Any(e => e.ProfileID == id);
         }
     }
 }

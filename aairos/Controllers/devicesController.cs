@@ -34,7 +34,7 @@ namespace aairos.Controllers
         [HttpGet("byGuId/{guId}")]
         public async Task<ActionResult<device>> GetDeviceByGuId(string guId)
         {
-            var device = await _context.device.FirstOrDefaultAsync(d => d.GuId == guId);
+            var device = await _context.device.FirstOrDefaultAsync(d => d.DeviceGUID == guId);
 
             if (device == null)
             {
@@ -63,7 +63,7 @@ namespace aairos.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Putdevice(int id, device device)
         {
-            if (id != device.Id)
+            if (id != device.DeviceID)
             {
                 return BadRequest();
             }
@@ -99,7 +99,7 @@ namespace aairos.Controllers
             _context.device.Add(device);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("Getdevice", new { id = device.Id }, device);
+            return CreatedAtAction("Getdevice", new { id = device.DeviceID }, device);
         }
 
         // DELETE: api/devices/5
@@ -120,7 +120,7 @@ namespace aairos.Controllers
 
         private bool deviceExists(int id)
         {
-            return _context.device.Any(e => e.Id == id);
+            return _context.device.Any(e => e.DeviceID == id);
         }
     }
 }

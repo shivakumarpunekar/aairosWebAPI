@@ -33,19 +33,18 @@ namespace aairos.Controllers
 
                 var combinedData = deviceDetails.Select(detail =>
                 {
-                    var device = devices.FirstOrDefault(d => d.Id == detail.DeviceId);
-                    var userProfile = userProfiles.FirstOrDefault(u => u.UserProfileId == detail.UserProfileId);
+                    var device = devices.FirstOrDefault(d => d.DeviceID == detail.DeviceID);
+                    var userProfile = userProfiles.FirstOrDefault(u => u.ProfileID == detail.DeviceID);
 
                     return new CombinedDataViewModel
                     {
-                        DeviceId = detail.DeviceId,
+                        DeviceId = detail.DeviceID,
                         UserName = userProfile?.UserName,
                         MobileNumber = userProfile?.MobileNumber,
                         CreatedDate = device?.CreatedDate ?? default,
-                        Sensor_1 = detail.Sensor_1,
-                        Sensor_2 = detail.Sensor_2,
-                        SolonoidVale = detail.SolonoidVale,
-                        ValveId = detail.ValveId,
+                        Sensor_1 = detail.Sensor1,
+                        Sensor_2 = detail.Sensor2,
+                        ValveId = detail.ValveID,
                         ValveStatus = detail.ValveStatus
                     };
                 }).ToList();
@@ -54,10 +53,8 @@ namespace aairos.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception (implement logging as per your logging framework)
                 Console.WriteLine(ex.Message);
 
-                // Return a generic error message
                 return StatusCode(500, "An internal server error occurred.");
             }
         }
@@ -70,29 +67,28 @@ namespace aairos.Controllers
                 var device = new aairos.Model.device
                 {
                     // Assuming Device class has the same properties
-                    Id = combinedData.DeviceId,
+                    DeviceID = combinedData.DeviceId,
                     CreatedDate = combinedData.CreatedDate
                 };
 
-                var userProfileId = (await _userProfileContext.UserProfile.FirstOrDefaultAsync(u => u.UserName == combinedData.UserName))?.UserProfileId;
+                var ProfileID = (await _userProfileContext.UserProfile.FirstOrDefaultAsync(u => u.UserName == combinedData.UserName))?.ProfileID;
 
-                if (!userProfileId.HasValue)
+                if (!ProfileID.HasValue)
                 {
                     return BadRequest("User profile not found");
                 }
 
                 var deviceDetail = new aairos.Model.devicedetail
                 {
-                    DeviceId = combinedData.DeviceId,
-                    UserProfileId = userProfileId.Value,
-                    Sensor_1 = combinedData.Sensor_1,
-                    Sensor_2 = combinedData.Sensor_2,
-                    SolonoidVale = combinedData.SolonoidVale,
+                    DeviceID = combinedData.DeviceId,
+                    ProfileID = ProfileID.Value,
+                    Sensor1 = combinedData.Sensor_1,
+                    Sensor2 = combinedData.Sensor_2,
                 };
 
                 var userProfile = new aairos.Model.userprofile
                 {
-                    UserProfileId = userProfileId.Value,
+                    ProfileID = ProfileID.Value,
                     UserName = combinedData.UserName,
                     MobileNumber = combinedData.MobileNumber
                 };
@@ -111,10 +107,8 @@ namespace aairos.Controllers
             }
             catch (Exception ex)
             {
-                // Log the exception (implement logging as per your logging framework)
                 Console.WriteLine(ex.Message);
 
-                // Return a generic error message
                 return StatusCode(500, "An internal server error occurred.");
             }
         }

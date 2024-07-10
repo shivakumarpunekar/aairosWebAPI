@@ -34,7 +34,7 @@ namespace aairos.Controllers
         [HttpGet("byGuId/{guId}")]
         public async Task<ActionResult<devicedetail>> GetDeviceDetailByGuId(string guId)
         {
-            var devicedetail = await _context.devicedetail.FirstOrDefaultAsync(d => d.GuId == guId);
+            var devicedetail = await _context.devicedetail.FirstOrDefaultAsync(d => d.DeviceDetailsGUID == guId);
 
             if (devicedetail == null)
             {
@@ -62,7 +62,7 @@ namespace aairos.Controllers
         [HttpGet("byId/{Id}")]
         public async Task<ActionResult<devicedetail>> GetdevicedetailById(int Id)
         {
-            var devicedetail = await _context.devicedetail.FirstOrDefaultAsync(d => d.Id == Id);
+            var devicedetail = await _context.devicedetail.FirstOrDefaultAsync(d => d.DeviceDetailsID == Id);
 
             if (devicedetail == null)
             {
@@ -77,7 +77,7 @@ namespace aairos.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Putdevicedetail(int id, devicedetail devicedetail)
         {
-            if (id != devicedetail.DeviceDetailId)
+            if (id != devicedetail.DeviceDetailsID)
             {
                 return BadRequest();
             }
@@ -111,7 +111,7 @@ namespace aairos.Controllers
             _context.devicedetail.Add(devicedetail);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("Getdevicedetail", new { id = devicedetail.DeviceDetailId }, devicedetail);
+            return CreatedAtAction("Getdevicedetail", new { id = devicedetail.DeviceDetailsID }, devicedetail);
         }
 
         // DELETE: api/devicedetails/5
@@ -132,7 +132,7 @@ namespace aairos.Controllers
 
         private bool devicedetailExists(int id)
         {
-            return _context.devicedetail.Any(e => e.DeviceDetailId == id);
+            return _context.devicedetail.Any(e => e.DeviceDetailsID == id);
         }
     }
 }
