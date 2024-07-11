@@ -14,6 +14,7 @@ using Serilog.Events;
 var builder = WebApplication.CreateBuilder(args);
 
 
+
 // Load configuration from appsettings.json
 var configuration = new ConfigurationBuilder()
     .SetBasePath(builder.Environment.ContentRootPath)
@@ -71,16 +72,17 @@ builder.Services.AddControllers()
      options.JsonSerializerOptions.Converters.Add(new JsonDateConverter());
  });
 
+
 // Add Serilog
-Log.Logger = new LoggerConfiguration()
+/*Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(configuration)
     .WriteTo.File(
-        path: "C:\\Logs\\log-.txt",
+        path: "Logs/log-.txt",
         rollingInterval: RollingInterval.Day,
         retainedFileCountLimit: 7)
     .CreateLogger();
 
-builder.Host.UseSerilog();
+builder.Host.UseSerilog();*/
 
 builder.Services.AddLogging();
 
