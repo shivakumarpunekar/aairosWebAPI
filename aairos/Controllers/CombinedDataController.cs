@@ -28,7 +28,7 @@ namespace aairos.Controllers
             try
             {
                 var devices = await _deviceContext.device.ToListAsync();
-                var deviceDetails = await _devicedetailContext.devicedetail.ToListAsync();
+                var deviceDetails = await _devicedetailContext.devicedetails.ToListAsync();
                 var userProfiles = await _userProfileContext.UserProfile.ToListAsync();
 
                 var combinedData = deviceDetails.Select(detail =>
@@ -95,7 +95,7 @@ namespace aairos.Controllers
 
                 // Add data to the respective contexts
                 _deviceContext.device.Add(device);
-                _devicedetailContext.devicedetail.Add(deviceDetail);
+                _devicedetailContext.devicedetails.Add(deviceDetail);
                 _userProfileContext.UserProfile.Add(userProfile);
 
                 // Save changes to the database

@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using aairos.Data;
 using aairos.Model;
-using Microsoft.CodeAnalysis.Elfie.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
 
 namespace aairos.Controllers
 {
@@ -15,22 +14,17 @@ namespace aairos.Controllers
     public class userprofilesController : ControllerBase
     {
         private readonly userprofileContext _context;
-        private readonly ILogger<userprofilesController> _logger;
 
-        public userprofilesController(userprofileContext context, ILogger<userprofilesController> logger)
+        public userprofilesController(userprofileContext context)
         {
             _context = context;
-            _logger = logger;
         }
 
         // GET: api/userprofiles
         [HttpGet]
         public async Task<ActionResult<IEnumerable<userprofile>>> Getuserprofile()
         {
-            _logger.LogInformation("Fetching user profiles");
-            var profiles = await _context.UserProfile.ToListAsync();
-            _logger.LogInformation($"Fetched {profiles.Count} user profiles");
-            return profiles;
+            return await _context.UserProfile.ToListAsync();
         }
 
         //This is a guId GET Methode

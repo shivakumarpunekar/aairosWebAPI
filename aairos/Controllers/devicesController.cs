@@ -16,22 +16,17 @@ namespace aairos.Controllers
     public class devicesController : ControllerBase
     {
         private readonly deviceContext _context;
-        private readonly ILogger<userprofilesController> _logger;
 
-        public devicesController(deviceContext context, ILogger<userprofilesController> logger)
+        public devicesController(deviceContext context)
         {
             _context = context;
-            _logger = logger;
         }
 
         // GET: api/devices
         [HttpGet]
         public async Task<ActionResult<IEnumerable<device>>> Getdevice()
         {
-            _logger.LogInformation("Fetching device");
-            var device = await _context.device.ToListAsync();
-            _logger.LogInformation($"Fetched {device.Count} device");
-            return device;
+            return await _context.device.ToListAsync();
         }
 
 

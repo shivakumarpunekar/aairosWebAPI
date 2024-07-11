@@ -28,17 +28,14 @@ namespace aairos.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<devicedetails>>> Getdevicedetail()
         {
-            _logger.LogInformation("Fetching device details");
-            var details = await _context.devicedetail.ToListAsync();
-            _logger.LogInformation($"Fetched {details.Count} device details");
-            return details;
+            return await _context.devicedetails.ToListAsync();
         }
 
         //This is a GUID GET Method
         [HttpGet("byGuId/{guId}")]
         public async Task<ActionResult<devicedetails>> GetDeviceDetailByGuId(string guId)
         {
-            var devicedetail = await _context.devicedetail.FirstOrDefaultAsync(d => d.DeviceDetailsGUID == guId);
+            var devicedetail = await _context.devicedetails.FirstOrDefaultAsync(d => d.DeviceDetailsGUID == guId);
 
             if (devicedetail == null)
             {
@@ -52,7 +49,7 @@ namespace aairos.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<devicedetails>> Getdevicedetail(int id)
         {
-            var devicedetail = await _context.devicedetail.FindAsync(id);
+            var devicedetail = await _context.devicedetails.FindAsync(id);
 
             if (devicedetail == null)
             {
@@ -66,7 +63,7 @@ namespace aairos.Controllers
         [HttpGet("byId/{Id}")]
         public async Task<ActionResult<devicedetails>> GetdevicedetailById(int Id)
         {
-            var devicedetail = await _context.devicedetail.FirstOrDefaultAsync(d => d.DeviceDetailsID == Id);
+            var devicedetail = await _context.devicedetails.FirstOrDefaultAsync(d => d.DeviceDetailsID == Id);
 
             if (devicedetail == null)
             {
@@ -112,7 +109,7 @@ namespace aairos.Controllers
         [HttpPost]
         public async Task<ActionResult<devicedetails>> Postdevicedetail(devicedetails devicedetail)
         {
-            _context.devicedetail.Add(devicedetail);
+            _context.devicedetails.Add(devicedetail);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(Getdevicedetail), new { id = devicedetail.DeviceDetailsID }, devicedetail);
@@ -122,13 +119,13 @@ namespace aairos.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Deletedevicedetail(int id)
         {
-            var devicedetail = await _context.devicedetail.FindAsync(id);
+            var devicedetail = await _context.devicedetails.FindAsync(id);
             if (devicedetail == null)
             {
                 return NotFound();
             }
 
-            _context.devicedetail.Remove(devicedetail);
+            _context.devicedetails.Remove(devicedetail);
             await _context.SaveChangesAsync();
 
             return NoContent();
@@ -136,7 +133,7 @@ namespace aairos.Controllers
 
         private bool devicedetailExists(int id)
         {
-            return _context.devicedetail.Any(e => e.DeviceDetailsID == id);
+            return _context.devicedetails.Any(e => e.DeviceDetailsID == id);
         }
     }
 }

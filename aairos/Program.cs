@@ -6,13 +6,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using aairos.Handular;
-using Microsoft.Extensions.Logging;
-using Serilog;
-using Serilog.Events;
-
-
 var builder = WebApplication.CreateBuilder(args);
-
 
 
 // Load configuration from appsettings.json
@@ -71,22 +65,7 @@ builder.Services.AddControllers()
  {
      options.JsonSerializerOptions.Converters.Add(new JsonDateConverter());
  });
-
-
-// Add Serilog
-/*Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(configuration)
-    .WriteTo.File(
-        path: "Logs/log-.txt",
-        rollingInterval: RollingInterval.Day,
-        retainedFileCountLimit: 7)
-    .CreateLogger();
-
-builder.Host.UseSerilog();*/
-
 builder.Services.AddLogging();
-
-
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

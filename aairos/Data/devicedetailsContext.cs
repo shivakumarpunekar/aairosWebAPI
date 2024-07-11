@@ -10,7 +10,7 @@ namespace aairos.Data
         {
         }
 
-        public DbSet<devicedetails> devicedetail { get; set; }
+        public DbSet<devicedetails> devicedetails { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
