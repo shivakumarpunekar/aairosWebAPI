@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using aairos.Data;
 using aairos.Model;
-using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
 
 namespace aairos.Controllers
 {
@@ -16,21 +16,25 @@ namespace aairos.Controllers
     public class devicedetailsController : ControllerBase
     {
         private readonly devicedetailsContext _context;
+        private readonly ILogger<devicedetailsController> _logger;
 
-        public devicedetailsController(devicedetailsContext context)
+        public devicedetailsController(devicedetailsContext context, ILogger<devicedetailsController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: api/devicedetails
         [HttpGet]
         public async Task<ActionResult<IEnumerable<devicedetails>>> Getdevicedetail()
         {
-            return await _context.devicedetail.ToListAsync();
+            _logger.LogInformation("Fetching device details");
+            var details = await _context.devicedetail.ToListAsync();
+            _logger.LogInformation($"Fetched {details.Count} device details");
+            return details;
         }
 
-
-        //This is a guId GET Method
+        //This is a GUID GET Method
         [HttpGet("byGuId/{guId}")]
         public async Task<ActionResult<devicedetails>> GetDeviceDetailByGuId(string guId)
         {
@@ -111,7 +115,7 @@ namespace aairos.Controllers
             _context.devicedetail.Add(devicedetail);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("Getdevicedetail", new { id = devicedetail.DeviceDetailsID }, devicedetail);
+            return CreatedAtAction(nameof(Getdevicedetail), new { id = devicedetail.DeviceDetailsID }, devicedetail);
         }
 
         // DELETE: api/devicedetails/5

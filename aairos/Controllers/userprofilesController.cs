@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using aairos.Data;
 using aairos.Model;
-using Microsoft.AspNetCore.Authorization;
+using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 
 namespace aairos.Controllers
 {
@@ -14,17 +15,22 @@ namespace aairos.Controllers
     public class userprofilesController : ControllerBase
     {
         private readonly userprofileContext _context;
+        private readonly ILogger<userprofilesController> _logger;
 
-        public userprofilesController(userprofileContext context)
+        public userprofilesController(userprofileContext context, ILogger<userprofilesController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // GET: api/userprofiles
         [HttpGet]
         public async Task<ActionResult<IEnumerable<userprofile>>> Getuserprofile()
         {
-            return await _context.UserProfile.ToListAsync();
+            _logger.LogInformation("Fetching user profiles");
+            var profiles = await _context.UserProfile.ToListAsync();
+            _logger.LogInformation($"Fetched {profiles.Count} user profiles");
+            return profiles;
         }
 
         //This is a guId GET Methode
@@ -74,6 +80,29 @@ namespace aairos.Controllers
             }
 
             return userprofile;
+        }
+
+
+        // GET: api/userprofiles/registrationsSummary
+        [HttpGet("registrationsSummary")]
+        public async Task<ActionResult<IEnumerable<RegistrationSummary>>> GetRegistrationsSummary()
+        {
+            var summary = await _context.UserProfile
+                .GroupBy(u => u.CreatedDate.Date)
+                .Select(g => new RegistrationSummary
+                {
+                    CreatedDate = g.Key,
+                    Count = g.Count()
+                })
+                .ToListAsync();
+
+            return Ok(summary);
+        }
+
+        public class RegistrationSummary
+        {
+            public DateTime CreatedDate { get; set; }
+            public int Count { get; set; }
         }
 
 

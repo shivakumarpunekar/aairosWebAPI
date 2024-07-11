@@ -60,6 +60,7 @@ namespace aairos
              {
                  options.JsonSerializerOptions.Converters.Add(new JsonDateConverter());
              });
+            services.AddLogging();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
