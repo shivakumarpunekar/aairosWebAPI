@@ -1,9 +1,11 @@
-﻿using aairos.Migrations.device;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace aairos.Model
 {
-    public class devicedetail
+    public class devicedetails
     {
+        [Key]
         public int DeviceDetailsID { get; set; }
         public string DeviceDetailsGUID { get; set; } = Guid.NewGuid().ToString();
         public int DeviceID { get; set; }

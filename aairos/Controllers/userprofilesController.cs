@@ -29,9 +29,9 @@ namespace aairos.Controllers
 
         //This is a guId GET Methode
         [HttpGet("byGuId/{guId}")]
-        public async Task<ActionResult<userprofile>> GetUserProfileByGuId(string guId)
+        public async Task<ActionResult<userprofile>> GetUserProfileByGuId(string ProfileGUID)
         {
-            var userprofile = await _context.UserProfile.FirstOrDefaultAsync(u => u.ProfileGUID == guId);
+            var userprofile = await _context.UserProfile.FirstOrDefaultAsync(u => u.ProfileGUID == ProfileGUID);
 
             if (userprofile == null)
             {
@@ -96,6 +96,11 @@ namespace aairos.Controllers
             // Preserve the original CreateDate
             userprofile.CreatedDate = existingProfile.CreatedDate;
             userprofile.UpdatedDate = DateTime.UtcNow;
+
+            // Detach the existing entity to avoid tracking issues
+            _context.Entry(existingProfile).State = EntityState.Detached;
+
+            // Update the entity and mark it as modified
             _context.Entry(userprofile).State = EntityState.Modified;
 
             try

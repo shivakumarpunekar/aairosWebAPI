@@ -39,7 +39,7 @@ builder.Services.AddAuthentication(options =>
 
 
 // This is for devicedetail connection
-builder.Services.AddDbContext<devicedetailContext>(options =>
+builder.Services.AddDbContext<devicedetailsContext>(options =>
     options.UseMySql(builder.Configuration.GetConnectionString("Defaltconnection"),
     new MySqlServerVersion(new Version(8, 0, 21))));
 

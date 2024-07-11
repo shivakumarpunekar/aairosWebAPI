@@ -15,16 +15,16 @@ namespace aairos.Controllers
     [ApiController]
     public class devicedetailsController : ControllerBase
     {
-        private readonly devicedetailContext _context;
+        private readonly devicedetailsContext _context;
 
-        public devicedetailsController(devicedetailContext context)
+        public devicedetailsController(devicedetailsContext context)
         {
             _context = context;
         }
 
         // GET: api/devicedetails
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<devicedetail>>> Getdevicedetail()
+        public async Task<ActionResult<IEnumerable<devicedetails>>> Getdevicedetail()
         {
             return await _context.devicedetail.ToListAsync();
         }
@@ -32,7 +32,7 @@ namespace aairos.Controllers
 
         //This is a guId GET Method
         [HttpGet("byGuId/{guId}")]
-        public async Task<ActionResult<devicedetail>> GetDeviceDetailByGuId(string guId)
+        public async Task<ActionResult<devicedetails>> GetDeviceDetailByGuId(string guId)
         {
             var devicedetail = await _context.devicedetail.FirstOrDefaultAsync(d => d.DeviceDetailsGUID == guId);
 
@@ -46,7 +46,7 @@ namespace aairos.Controllers
 
         // GET: api/devicedetails/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<devicedetail>> Getdevicedetail(int id)
+        public async Task<ActionResult<devicedetails>> Getdevicedetail(int id)
         {
             var devicedetail = await _context.devicedetail.FindAsync(id);
 
@@ -60,7 +60,7 @@ namespace aairos.Controllers
 
         // GET: api/devicedetails/bydeviceId/5
         [HttpGet("byId/{Id}")]
-        public async Task<ActionResult<devicedetail>> GetdevicedetailById(int Id)
+        public async Task<ActionResult<devicedetails>> GetdevicedetailById(int Id)
         {
             var devicedetail = await _context.devicedetail.FirstOrDefaultAsync(d => d.DeviceDetailsID == Id);
 
@@ -75,7 +75,7 @@ namespace aairos.Controllers
         // PUT: api/devicedetails/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> Putdevicedetail(int id, devicedetail devicedetail)
+        public async Task<IActionResult> Putdevicedetail(int id, devicedetails devicedetail)
         {
             if (id != devicedetail.DeviceDetailsID)
             {
@@ -106,7 +106,7 @@ namespace aairos.Controllers
         // POST: api/devicedetails
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<devicedetail>> Postdevicedetail(devicedetail devicedetail)
+        public async Task<ActionResult<devicedetails>> Postdevicedetail(devicedetails devicedetail)
         {
             _context.devicedetail.Add(devicedetail);
             await _context.SaveChangesAsync();

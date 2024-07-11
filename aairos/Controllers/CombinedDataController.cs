@@ -13,9 +13,9 @@ namespace aairos.Controllers
     public class CombinedDataController : ControllerBase
     {
         private readonly deviceContext _deviceContext;
-        private readonly devicedetailContext _devicedetailContext;
+        private readonly devicedetailsContext _devicedetailContext;
         private readonly userprofileContext _userProfileContext;
-        public CombinedDataController(deviceContext deviceContext, devicedetailContext devicedetailContext, userprofileContext userProfileContext)
+        public CombinedDataController(deviceContext deviceContext, devicedetailsContext devicedetailContext, userprofileContext userProfileContext)
         {
             _deviceContext = deviceContext;
             _devicedetailContext = devicedetailContext;
@@ -78,7 +78,7 @@ namespace aairos.Controllers
                     return BadRequest("User profile not found");
                 }
 
-                var deviceDetail = new aairos.Model.devicedetail
+                var deviceDetail = new aairos.Model.devicedetails
                 {
                     DeviceID = combinedData.DeviceId,
                     ProfileID = ProfileID.Value,

@@ -1,7 +1,4 @@
-﻿using aairos.Migrations.device;
-
-
-namespace aairos.Model
+﻿namespace aairos.Model
 {
     public class CombinedDataViewModel
     {
