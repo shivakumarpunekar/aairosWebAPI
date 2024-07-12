@@ -62,21 +62,6 @@ namespace aairos.Controllers
         }
 
 
-        // GET: api/userprofiles/byLoginId/5
-       /* [HttpGet("byLoginId/{loginId}")]
-        public async Task<ActionResult<userprofile>> GetuserprofileByLoginId(int loginId)
-        {
-            var userprofile = await _context.UserProfile.FirstOrDefaultAsync(u => u.LoginId == loginId);
-
-            if (userprofile == null)
-            {
-                return NotFound();
-            }
-
-            return userprofile;
-        }*/
-
-
         // GET: api/userprofiles/registrationsSummary
         [HttpGet("registrationsSummary")]
         public async Task<ActionResult<IEnumerable<RegistrationSummary>>> GetRegistrationsSummary()
