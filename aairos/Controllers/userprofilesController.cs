@@ -77,6 +77,29 @@ namespace aairos.Controllers
         }
 
 
+        // GET: api/userprofiles/registrationsSummary
+        [HttpGet("registrationsSummary")]
+        public async Task<ActionResult<IEnumerable<RegistrationSummary>>> GetRegistrationsSummary()
+        {
+            var summary = await _context.UserProfile
+                .GroupBy(u => u.CreatedDate.Date)
+                .Select(g => new RegistrationSummary
+                {
+                    CreatedDate = g.Key,
+                    Count = g.Count()
+                })
+                .ToListAsync();
+
+            return Ok(summary);
+        }
+
+        public class RegistrationSummary
+        {
+            public DateTime CreatedDate { get; set; }
+            public int Count { get; set; }
+        }
+
+
 
         // PUT: api/userprofiles/5
         [HttpPut("{id}")]
@@ -93,13 +116,19 @@ namespace aairos.Controllers
             {
                 return NotFound();
             }
-            // Preserve the original CreateDate
-            userprofile.CreatedDate = existingProfile.CreatedDate;
-            userprofile.UpdatedDate = DateTime.UtcNow;
-            _context.Entry(userprofile).State = EntityState.Modified;
 
             try
             {
+                // Detach the existing profile from the context
+                _context.Entry(existingProfile).State = EntityState.Detached;
+
+                // Preserve the original CreateDate
+                userprofile.CreatedDate = existingProfile.CreatedDate;
+                userprofile.UpdatedDate = DateTime.UtcNow;
+
+                // Mark the new profile as modified
+                _context.Entry(userprofile).State = EntityState.Modified;
+
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
@@ -116,6 +145,7 @@ namespace aairos.Controllers
 
             return NoContent();
         }
+
 
         // POST: api/userprofiles
         [HttpPost]
