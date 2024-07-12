@@ -9,7 +9,5 @@
         public int DeviceId { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime UpdatedDate { get; set; }
-        // Navigation property for userprofile
-        public virtual userprofile UserProfile { get; set; }
     }
 }
