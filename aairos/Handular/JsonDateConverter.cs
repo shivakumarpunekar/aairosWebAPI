@@ -6,7 +6,7 @@ namespace aairos.Handular
 {
     public class JsonDateConverter : JsonConverter<DateTime>
     {
-        private readonly string _format = "yyyy-MM-dd"; 
+        private readonly string _format = "yyyy-MM-dd  HH:mm:ss "; 
 
         public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
