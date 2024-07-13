@@ -30,6 +30,22 @@ namespace aairos.Controllers
             _configuration = configuration;
         }
 
+
+        // New method to get UserProfileId by LoginId
+        [HttpGet("login/{loginId}")]
+        public async Task<IActionResult> GetUserProfileIdByLoginId(int loginId)
+        {
+            var user = await _context.Login.FindAsync(loginId);
+
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+
+            return Ok(new { UserProfileId = user.UserProfileId });
+        }
+
+        //This is a Login fetch method by entering username and password
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLogin login)
         {
