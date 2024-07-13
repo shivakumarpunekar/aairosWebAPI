@@ -112,6 +112,9 @@ namespace aairos
                 options.UseMySql(Configuration.GetConnectionString("Defaltconnection"),
                 new MySqlServerVersion(new Version(8, 0, 21))));
 
+            services.AddDbContext<sensor_dataContext>(options =>
+                options.UseMySql(Configuration.GetConnectionString("Defaltconnection"),
+                new MySqlServerVersion(new Version(8, 0, 21))));
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

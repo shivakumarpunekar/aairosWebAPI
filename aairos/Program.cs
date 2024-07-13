@@ -38,6 +38,11 @@ builder.Services.AddAuthentication(options =>
 });
 
 
+// This is for sensor_data connection
+builder.Services.AddDbContext<sensor_dataContext>(options =>
+    options.UseMySql(builder.Configuration.GetConnectionString("Defaltconnection"),
+    new MySqlServerVersion(new Version(8, 0, 21))));
+
 // This is for devicedetail connection
 builder.Services.AddDbContext<devicedetailContext>(options =>
     options.UseMySql(builder.Configuration.GetConnectionString("Defaltconnection"),
