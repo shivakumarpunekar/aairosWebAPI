@@ -6,6 +6,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using aairos.Handular;
+using aairos.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 
@@ -14,6 +15,11 @@ var configuration = new ConfigurationBuilder()
     .SetBasePath(builder.Environment.ContentRootPath)
     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
     .Build();
+
+
+// Add services to the container
+builder.Services.AddSingleton<FileLoggerService>(provider =>
+    new FileLoggerService("log.txt", TimeSpan.FromDays(7)));
 
 /*var key = Encoding.ASCII.GetBytes(configuration["Jwt:Key"]);*/
 

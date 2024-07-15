@@ -1,5 +1,6 @@
 ﻿using aairos.Data;
 using aairos.Handular;
+using aairos.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -21,6 +22,9 @@ namespace aairos
 
         public void ConfigureServices(IServiceCollection services)
         {
+            // Register FileLoggerService with a specific log file path and log retention period
+            services.AddSingleton<FileLoggerService>(provider =>
+                new FileLoggerService("log.txt", TimeSpan.FromDays(7)));
 
             //Add JWT authentication
             var secretKey = Configuration["JwtSettings:SecretKey"];

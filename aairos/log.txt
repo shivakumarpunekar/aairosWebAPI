@@ -1,0 +1,8 @@
+15-07-2024 10:59:34: GET request received at userprofilesController.
+15-07-2024 10:59:54: GET request received at userprofilesController.
+15-07-2024 10:59:56: GET request received at userprofilesController.
+15-07-2024 11:00:38: GET request received at userprofilesController.
+15-07-2024 11:06:23: GET: api/userprofiles called.
+15-07-2024 11:06:24: GET: api/userprofiles returned 2 records.
+15-07-2024 11:13:36: GET: api/userprofiles returned 2 records.
+15-07-2024 11:13:55: GET: api/userprofiles/22 returned a user profile.
