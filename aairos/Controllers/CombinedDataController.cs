@@ -1,11 +1,11 @@
-﻿using aairos.Data;
-using aairos.Migrations.device;
-using aairos.Migrations.devicedetail;
-using aairos.Model;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+using aairos.Data;
+using aairos.Model;
+using aairos.Services;
 
 namespace aairos.Controllers
 {
@@ -13,17 +13,20 @@ namespace aairos.Controllers
     [ApiController]
     public class CombinedDataController : ControllerBase
     {
+        private readonly FileLoggerService _logger;
         private readonly deviceContext _deviceContext;
         private readonly devicedetailContext _deviceDetailContext;
         private readonly userprofileContext _userProfileContext;
-        public CombinedDataController(deviceContext deviceContext, devicedetailContext deviceDetailContext, userprofileContext userProfileContext)
+
+        public CombinedDataController(deviceContext deviceContext, devicedetailContext deviceDetailContext, userprofileContext userProfileContext, FileLoggerService logger)
         {
+            _logger = logger;
             _deviceContext = deviceContext;
             _deviceDetailContext = deviceDetailContext;
             _userProfileContext = userProfileContext;
         }
 
-        // This is a Get method.
+        // GET: api/CombinedData
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CombinedDataViewModel>>> GetCombinedData()
         {
@@ -49,15 +52,17 @@ namespace aairos.Controllers
                 };
             }).ToList();
 
+            await _logger.LogAsync($"GET: api/CombinedData returned {combinedData.Count} records.");
             return Ok(combinedData);
         }
 
-        // This is a post method.
+        // POST: api/CombinedData
         [HttpPost]
         public async Task<ActionResult<CombinedDataViewModel>> CreateCombinedData([FromBody] CombinedDataViewModel inputData)
         {
             if (inputData == null)
             {
+                await _logger.LogAsync("POST: api/CombinedData received null input data.");
                 return BadRequest();
             }
 
@@ -73,7 +78,7 @@ namespace aairos.Controllers
             await _userProfileContext.SaveChangesAsync();
 
             // Create a new Device
-            var device = new Model.device
+            var device = new device
             {
                 CreatedDate = inputData.CreatedDate
             };
@@ -83,7 +88,7 @@ namespace aairos.Controllers
             await _deviceContext.SaveChangesAsync();
 
             // Create a new DeviceDetail
-            var deviceDetail = new Model.devicedetail
+            var deviceDetail = new devicedetail
             {
                 DeviceId = device.Id,
                 UserProfileId = userProfile.UserProfileId,
@@ -108,8 +113,8 @@ namespace aairos.Controllers
                 ValveStatus = deviceDetail.ValveStatus
             };
 
+            await _logger.LogAsync($"POST: api/CombinedData created new combined data with DeviceId {deviceDetail.DeviceId}.");
             return CreatedAtAction(nameof(GetCombinedData), new { id = deviceDetail.DeviceId }, combinedData);
         }
-
     }
 }

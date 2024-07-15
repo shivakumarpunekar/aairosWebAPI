@@ -28,8 +28,6 @@ namespace aairos.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<sensor_data>>> GetSensorData()
         {
-            await _logger.LogAsync("GET: api/sensor_data called.");
-
             var data = await _context.sensor_data
                 .OrderByDescending(s => s.timestamp)
                 .Take(100)
@@ -53,8 +51,6 @@ namespace aairos.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<sensor_data>> GetSensorData(int id)
         {
-            await _logger.LogAsync($"GET: api/sensor_data/{id} called.");
-
             var sensorData = await _context.sensor_data
                 .Select(s => new SensorDataDto
                 {
@@ -81,8 +77,6 @@ namespace aairos.Controllers
         [HttpPost]
         public async Task<ActionResult<sensor_data>> PostSensorData([FromBody] sensor_data value)
         {
-            await _logger.LogAsync("POST: api/sensor_data called.");
-
             _context.sensor_data.Add(value);
             await _context.SaveChangesAsync();
 
@@ -104,8 +98,6 @@ namespace aairos.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutSensorData(int id, [FromBody] sensor_data value)
         {
-            await _logger.LogAsync($"PUT: api/sensor_data/{id} called.");
-
             if (id != value.id)
             {
                 await _logger.LogAsync($"PUT: api/sensor_data/{id} returned BadRequest due to ID mismatch.");
@@ -140,8 +132,6 @@ namespace aairos.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSensorData(int id)
         {
-            await _logger.LogAsync($"DELETE: api/sensor_data/{id} called.");
-
             var sensorData = await _context.sensor_data.FindAsync(id);
             if (sensorData == null)
             {

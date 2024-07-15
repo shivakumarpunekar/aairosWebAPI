@@ -37,8 +37,6 @@ namespace aairos.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<device>> Getdevice(int id)
         {
-            await _logger.LogAsync($"GET: api/devices/{id} called.");
-
             var device = await _context.device.FindAsync(id);
 
             if (device == null)
@@ -56,8 +54,6 @@ namespace aairos.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Putdevice(int id, device device)
         {
-            await _logger.LogAsync($"PUT: api/devices/{id} called.");
-
             if (id != device.Id)
             {
                 await _logger.LogAsync($"PUT: api/devices/{id} returned BadRequest due to ID mismatch.");
@@ -93,8 +89,6 @@ namespace aairos.Controllers
         [HttpPost]
         public async Task<ActionResult<device>> Postdevice(device device)
         {
-            await _logger.LogAsync("POST: api/devices called.");
-
             _context.device.Add(device);
             await _context.SaveChangesAsync();
 
@@ -106,8 +100,6 @@ namespace aairos.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Deletedevice(int id)
         {
-            await _logger.LogAsync($"DELETE: api/devices/{id} called.");
-
             var device = await _context.device.FindAsync(id);
             if (device == null)
             {
