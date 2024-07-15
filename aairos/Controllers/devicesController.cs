@@ -28,6 +28,7 @@ namespace aairos.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<device>>> Getdevice()
         {
+            /*return await  _context.device.ToListAsync();*/
             var devices = await _context.device.ToListAsync();
             await _logger.LogAsync($"GET: api/devices returned {devices.Count} records.");
             return devices;

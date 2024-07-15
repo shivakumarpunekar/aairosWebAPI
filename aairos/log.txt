@@ -6,3 +6,18 @@
 15-07-2024 11:06:24: GET: api/userprofiles returned 2 records.
 15-07-2024 11:13:36: GET: api/userprofiles returned 2 records.
 15-07-2024 11:13:55: GET: api/userprofiles/22 returned a user profile.
+15-07-2024 12:23:32: GET: api/userprofiles returned 2 records.
+15-07-2024 12:23:46: GET: api/Auth/login/22 - UserProfileId: 22.
+15-07-2024 12:23:52: GET: api/CombinedData returned 2 records.
+15-07-2024 12:23:59: GET: api/devicedetails returned 2 records.
+15-07-2024 12:24:05: GET: api/devices returned 2 records.
+15-07-2024 12:24:16: GET: api/sensor_data returned 100 records.
+15-07-2024 12:24:22: GET: api/sensor_data returned 100 records.
+15-07-2024 12:24:24: GET: api/sensor_data returned 100 records.
+15-07-2024 12:29:53: POST: api/Auth/login - Successful login for username: John123, loginId: 21, IsAdmin: True.
+15-07-2024 12:56:09: GET: api/userprofiles returned 2 records.
+15-07-2024 13:06:37: GET: api/userprofiles/22 returned a user profile.
+15-07-2024 13:06:46: GET: api/userprofiles/21 returned a user profile.
+15-07-2024 13:06:58: GET: api/Auth/login/22 - UserProfileId: 22.
+15-07-2024 13:22:40: GET: api/userprofiles returned 2 records.
+15-07-2024 13:25:54: GET: api/Auth/login/22 - UserProfileId: 22.
