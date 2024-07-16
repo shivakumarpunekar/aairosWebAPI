@@ -21,3 +21,10 @@
 15-07-2024 13:06:58: GET: api/Auth/login/22 - UserProfileId: 22.
 15-07-2024 13:22:40: GET: api/userprofiles returned 2 records.
 15-07-2024 13:25:54: GET: api/Auth/login/22 - UserProfileId: 22.
+15-07-2024 13:40:30: POST: api/Auth/login - Successful login for username: John123, loginId: 21, IsAdmin: True.
+15-07-2024 15:17:03: GET: api/userprofiles returned 2 records.
+15-07-2024 15:17:10: GET: api/devices returned 2 records.
+15-07-2024 15:33:43: GET: api/userprofiles returned 2 records.
+16-07-2024 04:49:02: GET: api/sensor_data/device/1 returned 1123 records.
+16-07-2024 04:49:40: GET: api/sensor_data/device/1 returned 1123 records.
+16-07-2024 04:50:28: GET: api/sensor_data/device/2 returned 203 records.

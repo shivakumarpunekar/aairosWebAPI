@@ -15,13 +15,13 @@ namespace aairos.Controllers
     [ApiController]
     public class devicesController : ControllerBase
     {
-        private readonly FileLoggerService _logger;
-        private readonly deviceContext _context;
+/*        private readonly FileLoggerService _logger;
+*/        private readonly deviceContext _context;
 
         public devicesController(deviceContext context, FileLoggerService logger)
         {
-            _logger = logger;
-            _context = context;
+/*            _logger = logger;
+*/            _context = context;
         }
 
         // GET: api/devices
@@ -30,8 +30,8 @@ namespace aairos.Controllers
         {
             /*return await  _context.device.ToListAsync();*/
             var devices = await _context.device.ToListAsync();
-            await _logger.LogAsync($"GET: api/devices returned {devices.Count} records.");
-            return devices;
+/*            await _logger.LogAsync($"GET: api/devices returned {devices.Count} records.");
+*/            return devices;
         }
 
         // GET: api/devices/5
@@ -42,12 +42,12 @@ namespace aairos.Controllers
 
             if (device == null)
             {
-                await _logger.LogAsync($"GET: api/devices/{id} returned NotFound.");
-                return NotFound();
+/*                await _logger.LogAsync($"GET: api/devices/{id} returned NotFound.");
+*/                return NotFound();
             }
 
-            await _logger.LogAsync($"GET: api/devices/{id} returned a device.");
-            return device;
+/*            await _logger.LogAsync($"GET: api/devices/{id} returned a device.");
+*/            return device;
         }
 
         // PUT: api/devices/5
@@ -57,8 +57,8 @@ namespace aairos.Controllers
         {
             if (id != device.Id)
             {
-                await _logger.LogAsync($"PUT: api/devices/{id} returned BadRequest due to ID mismatch.");
-                return BadRequest();
+/*                await _logger.LogAsync($"PUT: api/devices/{id} returned BadRequest due to ID mismatch.");
+*/                return BadRequest();
             }
 
             _context.Entry(device).State = EntityState.Modified;
@@ -66,19 +66,19 @@ namespace aairos.Controllers
             try
             {
                 await _context.SaveChangesAsync();
-                await _logger.LogAsync($"PUT: api/devices/{id} updated successfully.");
-            }
+/*                await _logger.LogAsync($"PUT: api/devices/{id} updated successfully.");
+*/            }
             catch (DbUpdateConcurrencyException)
             {
                 if (!deviceExists(id))
                 {
-                    await _logger.LogAsync($"PUT: api/devices/{id} returned NotFound during concurrency check.");
-                    return NotFound();
+/*                    await _logger.LogAsync($"PUT: api/devices/{id} returned NotFound during concurrency check.");
+*/                    return NotFound();
                 }
                 else
                 {
-                    await _logger.LogAsync($"PUT: api/devices/{id} encountered a concurrency exception.");
-                    throw;
+/*                    await _logger.LogAsync($"PUT: api/devices/{id} encountered a concurrency exception.");
+*/                    throw;
                 }
             }
 
@@ -93,8 +93,8 @@ namespace aairos.Controllers
             _context.device.Add(device);
             await _context.SaveChangesAsync();
 
-            await _logger.LogAsync($"POST: api/devices created a new device with ID {device.Id}.");
-            return CreatedAtAction("Getdevice", new { id = device.Id }, device);
+/*            await _logger.LogAsync($"POST: api/devices created a new device with ID {device.Id}.");
+*/            return CreatedAtAction("Getdevice", new { id = device.Id }, device);
         }
 
         // DELETE: api/devices/5
@@ -104,15 +104,15 @@ namespace aairos.Controllers
             var device = await _context.device.FindAsync(id);
             if (device == null)
             {
-                await _logger.LogAsync($"DELETE: api/devices/{id} returned NotFound.");
-                return NotFound();
+/*                await _logger.LogAsync($"DELETE: api/devices/{id} returned NotFound.");
+*/                return NotFound();
             }
 
             _context.device.Remove(device);
             await _context.SaveChangesAsync();
 
-            await _logger.LogAsync($"DELETE: api/devices/{id} deleted successfully.");
-            return NoContent();
+/*            await _logger.LogAsync($"DELETE: api/devices/{id} deleted successfully.");
+*/            return NoContent();
         }
 
         private bool deviceExists(int id)

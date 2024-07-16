@@ -13,15 +13,15 @@ namespace aairos.Controllers
     [ApiController]
     public class CombinedDataController : ControllerBase
     {
-        private readonly FileLoggerService _logger;
-        private readonly deviceContext _deviceContext;
+/*        private readonly FileLoggerService _logger;
+*/        private readonly deviceContext _deviceContext;
         private readonly devicedetailContext _deviceDetailContext;
         private readonly userprofileContext _userProfileContext;
 
         public CombinedDataController(deviceContext deviceContext, devicedetailContext deviceDetailContext, userprofileContext userProfileContext, FileLoggerService logger)
         {
-            _logger = logger;
-            _deviceContext = deviceContext;
+/*            _logger = logger;
+*/            _deviceContext = deviceContext;
             _deviceDetailContext = deviceDetailContext;
             _userProfileContext = userProfileContext;
         }
@@ -52,8 +52,8 @@ namespace aairos.Controllers
                 };
             }).ToList();
 
-            await _logger.LogAsync($"GET: api/CombinedData returned {combinedData.Count} records.");
-            return Ok(combinedData);
+/*            await _logger.LogAsync($"GET: api/CombinedData returned {combinedData.Count} records.");
+*/            return Ok(combinedData);
         }
 
         // POST: api/CombinedData
@@ -62,8 +62,8 @@ namespace aairos.Controllers
         {
             if (inputData == null)
             {
-                await _logger.LogAsync("POST: api/CombinedData received null input data.");
-                return BadRequest();
+/*                await _logger.LogAsync("POST: api/CombinedData received null input data.");
+*/                return BadRequest();
             }
 
             // Create a new UserProfile
@@ -113,8 +113,8 @@ namespace aairos.Controllers
                 ValveStatus = deviceDetail.ValveStatus
             };
 
-            await _logger.LogAsync($"POST: api/CombinedData created new combined data with DeviceId {deviceDetail.DeviceId}.");
-            return CreatedAtAction(nameof(GetCombinedData), new { id = deviceDetail.DeviceId }, combinedData);
+/*            await _logger.LogAsync($"POST: api/CombinedData created new combined data with DeviceId {deviceDetail.DeviceId}.");
+*/            return CreatedAtAction(nameof(GetCombinedData), new { id = deviceDetail.DeviceId }, combinedData);
         }
     }
 }

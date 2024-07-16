@@ -15,13 +15,13 @@ namespace aairos.Controllers
     public class userprofilesController : ControllerBase
     {
         //This is a Log
-        private readonly FileLoggerService _logger;
-        private readonly userprofileContext _context;
+/*        private readonly FileLoggerService _logger;
+*/        private readonly userprofileContext _context;
 
         public userprofilesController(userprofileContext context, FileLoggerService logger)
         {
-            _logger = logger;
-            _context = context;
+/*            _logger = logger;
+*/            _context = context;
         }
 
         // GET: api/userprofiles
@@ -32,8 +32,8 @@ namespace aairos.Controllers
 
             var userprofiles = await _context.UserProfile.ToListAsync();
 
-            await _logger.LogAsync($"GET: api/userprofiles returned {userprofiles.Count} records.");
-
+/*            await _logger.LogAsync($"GET: api/userprofiles returned {userprofiles.Count} records.");
+*/
             return userprofiles;
         }
 
@@ -45,12 +45,12 @@ namespace aairos.Controllers
 
             if (userprofile == null)
             {
-                await _logger.LogAsync($"GET: api/userprofiles/byGuId/{GuId} returned NotFound.");
-                return NotFound();
+/*                await _logger.LogAsync($"GET: api/userprofiles/byGuId/{GuId} returned NotFound.");
+*/                return NotFound();
             }
 
-            await _logger.LogAsync($"GET: api/userprofiles/byGuId/{GuId} returned a user profile.");
-            return userprofile;
+/*            await _logger.LogAsync($"GET: api/userprofiles/byGuId/{GuId} returned a user profile.");
+*/            return userprofile;
         }
 
         // GET: api/userprofiles/5
@@ -61,8 +61,8 @@ namespace aairos.Controllers
 
             if (userprofile == null)
             {
-                await _logger.LogAsync($"GET: api/userprofiles/{id} returned NotFound.");
-                return NotFound();
+/*                await _logger.LogAsync($"GET: api/userprofiles/{id} returned NotFound.");
+*/                return NotFound();
             }
 
             // Update the UpdatedDate field
@@ -71,8 +71,8 @@ namespace aairos.Controllers
             _context.Entry(userprofile).State = EntityState.Modified;
             await _context.SaveChangesAsync();
 
-            await _logger.LogAsync($"GET: api/userprofiles/{id} returned a user profile.");
-            return userprofile;
+/*            await _logger.LogAsync($"GET: api/userprofiles/{id} returned a user profile.");
+*/            return userprofile;
         }
 
 
@@ -89,8 +89,8 @@ namespace aairos.Controllers
                })
                .ToListAsync();
 
-            await _logger.LogAsync($"GET: api/userprofiles/registrationsSummary returned {summary.Count} records.");
-            return Ok(summary);
+/*            await _logger.LogAsync($"GET: api/userprofiles/registrationsSummary returned {summary.Count} records.");
+*/            return Ok(summary);
         }
 
         public class RegistrationSummary
@@ -107,16 +107,16 @@ namespace aairos.Controllers
         {
             if (id != userprofile.UserProfileId)
             {
-                await _logger.LogAsync($"PUT: api/userprofiles/{id} returned BadRequest due to mismatched IDs.");
-                return BadRequest();
+/*                await _logger.LogAsync($"PUT: api/userprofiles/{id} returned BadRequest due to mismatched IDs.");
+*/                return BadRequest();
             }
 
             // Retrieve the existing user profile
             var existingProfile = await _context.UserProfile.FindAsync(id);
             if (existingProfile == null)
             {
-                await _logger.LogAsync($"PUT: api/userprofiles/{id} returned NotFound.");
-                return NotFound();
+/*                await _logger.LogAsync($"PUT: api/userprofiles/{id} returned NotFound.");
+*/                return NotFound();
             }
 
             try
@@ -132,19 +132,19 @@ namespace aairos.Controllers
                 _context.Entry(userprofile).State = EntityState.Modified;
 
                 await _context.SaveChangesAsync();
-                await _logger.LogAsync($"PUT: api/userprofiles/{id} updated successfully.");
-            }
+/*                await _logger.LogAsync($"PUT: api/userprofiles/{id} updated successfully.");
+*/            }
             catch (DbUpdateConcurrencyException)
             {
                 if (!userprofileExists(id))
                 {
-                    await _logger.LogAsync($"PUT: api/userprofiles/{id} returned NotFound during concurrency check.");
-                    return NotFound();
+/*                    await _logger.LogAsync($"PUT: api/userprofiles/{id} returned NotFound during concurrency check.");
+*/                    return NotFound();
                 }
                 else
                 {
-                    await _logger.LogAsync($"PUT: api/userprofiles/{id} encountered a concurrency exception.");
-                    throw;
+/*                    await _logger.LogAsync($"PUT: api/userprofiles/{id} encountered a concurrency exception.");
+*/                    throw;
                 }
             }
 
@@ -162,14 +162,14 @@ namespace aairos.Controllers
 
             if (existingUserName)
             {
-                await _logger.LogAsync("POST: api/userprofiles returned Conflict due to existing UserName.");
-                return Conflict(new { message = "UserName already exists." });
+/*                await _logger.LogAsync("POST: api/userprofiles returned Conflict due to existing UserName.");
+*/                return Conflict(new { message = "UserName already exists." });
             }
 
             if (existingMobileNumber)
             {
-                await _logger.LogAsync("POST: api/userprofiles returned Conflict due to existing MobileNumber.");
-                return Conflict(new { message = "MobileNumber already exists." });
+/*                await _logger.LogAsync("POST: api/userprofiles returned Conflict due to existing MobileNumber.");
+*/                return Conflict(new { message = "MobileNumber already exists." });
             }
 
             userprofile.CreatedDate = DateTime.UtcNow;
@@ -177,8 +177,8 @@ namespace aairos.Controllers
             _context.UserProfile.Add(userprofile);
             await _context.SaveChangesAsync();
 
-            await _logger.LogAsync($"POST: api/userprofiles created a new user profile with ID {userprofile.UserProfileId}.");
-            return CreatedAtAction(nameof(Getuserprofile), new { id = userprofile.UserProfileId }, userprofile);
+/*            await _logger.LogAsync($"POST: api/userprofiles created a new user profile with ID {userprofile.UserProfileId}.");
+*/            return CreatedAtAction(nameof(Getuserprofile), new { id = userprofile.UserProfileId }, userprofile);
         }
 
         // DELETE: api/userprofiles/5
@@ -188,15 +188,15 @@ namespace aairos.Controllers
             var userprofile = await _context.UserProfile.FindAsync(id);
             if (userprofile == null)
             {
-                await _logger.LogAsync($"DELETE: api/userprofiles/{id} returned NotFound.");
-                return NotFound();
+/*                await _logger.LogAsync($"DELETE: api/userprofiles/{id} returned NotFound.");
+*/                return NotFound();
             }
 
             _context.UserProfile.Remove(userprofile);
             await _context.SaveChangesAsync();
 
-            await _logger.LogAsync($"DELETE: api/userprofiles/{id} deleted successfully.");
-            return NoContent();
+/*            await _logger.LogAsync($"DELETE: api/userprofiles/{id} deleted successfully.");
+*/            return NoContent();
         }
 
         private bool userprofileExists(int id)

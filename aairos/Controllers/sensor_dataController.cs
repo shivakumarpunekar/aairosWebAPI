@@ -15,13 +15,13 @@ namespace aairos.Controllers
     public class sensor_dataController : ControllerBase
     {
         // This is for logging.
-        private readonly FileLoggerService _logger;
-        private readonly sensor_dataContext _context;
+/*        private readonly FileLoggerService _logger;
+*/        private readonly sensor_dataContext _context;
 
         public sensor_dataController(sensor_dataContext context, FileLoggerService logger)
         {
-            _logger = logger;
-            _context = context;
+/*            _logger = logger;
+*/            _context = context;
         }
 
         // GET: api/sensor_data
@@ -42,10 +42,42 @@ namespace aairos.Controllers
                 })
                 .ToListAsync();
 
-            await _logger.LogAsync($"GET: api/sensor_data returned {data.Count} records.");
-
+/*            await _logger.LogAsync($"GET: api/sensor_data returned {data.Count} records.");
+*/
             return Ok(data);
         }
+
+
+        // GET: api/sensor_data/device/{deviceId}
+        [HttpGet("device/{deviceId}")]
+        public async Task<ActionResult<IEnumerable<SensorDataDto>>> GetSensorDataByDeviceId(int deviceId)
+        {
+            var data = await _context.sensor_data
+                .Where(s => s.deviceId == deviceId)
+                .OrderByDescending(s => s.timestamp)
+                .Take(100)
+                .Select(s => new SensorDataDto
+                {
+                    id = s.id,
+                    sensor1_value = s.sensor1_value,
+                    sensor2_value = s.sensor2_value,
+                    deviceId = s.deviceId,
+                    solenoidValveStatus = s.solenoidValveStatus ? "On" : "Off",
+                    timestamp = s.timestamp,
+                })
+                .ToListAsync();
+
+            if (!data.Any())
+            {
+/*                await _logger.LogAsync($"GET: api/sensor_data/device/{deviceId} returned NotFound.");
+*/                return NotFound();
+            }
+
+/*            await _logger.LogAsync($"GET: api/sensor_data/device/{deviceId} returned {data.Count} records.");
+*/            return Ok(data);
+        }
+
+
 
         // GET api/sensor_data/5
         [HttpGet("{id}")]
@@ -65,12 +97,12 @@ namespace aairos.Controllers
 
             if (sensorData == null)
             {
-                await _logger.LogAsync($"GET: api/sensor_data/{id} returned NotFound.");
-                return NotFound();
+/*                await _logger.LogAsync($"GET: api/sensor_data/{id} returned NotFound.");
+*/                return NotFound();
             }
 
-            await _logger.LogAsync($"GET: api/sensor_data/{id} returned a record.");
-            return Ok(sensorData);
+/*            await _logger.LogAsync($"GET: api/sensor_data/{id} returned a record.");
+*/            return Ok(sensorData);
         }
 
         // POST api/sensor_data
@@ -90,8 +122,8 @@ namespace aairos.Controllers
                 timestamp = value.timestamp,
             };
 
-            await _logger.LogAsync($"POST: api/sensor_data created a new record with ID {value.id}.");
-            return CreatedAtAction(nameof(GetSensorData), new { id = value.id }, sensorDataDto);
+/*            await _logger.LogAsync($"POST: api/sensor_data created a new record with ID {value.id}.");
+*/            return CreatedAtAction(nameof(GetSensorData), new { id = value.id }, sensorDataDto);
         }
 
         // PUT api/sensor_data/5
@@ -100,8 +132,8 @@ namespace aairos.Controllers
         {
             if (id != value.id)
             {
-                await _logger.LogAsync($"PUT: api/sensor_data/{id} returned BadRequest due to ID mismatch.");
-                return BadRequest();
+/*                await _logger.LogAsync($"PUT: api/sensor_data/{id} returned BadRequest due to ID mismatch.");
+*/                return BadRequest();
             }
 
             _context.Entry(value).State = EntityState.Modified;
@@ -109,19 +141,19 @@ namespace aairos.Controllers
             try
             {
                 await _context.SaveChangesAsync();
-                await _logger.LogAsync($"PUT: api/sensor_data/{id} updated successfully.");
-            }
+/*                await _logger.LogAsync($"PUT: api/sensor_data/{id} updated successfully.");
+*/            }
             catch (DbUpdateConcurrencyException)
             {
                 if (!SensorDataExists(id))
                 {
-                    await _logger.LogAsync($"PUT: api/sensor_data/{id} returned NotFound during concurrency check.");
-                    return NotFound();
+/*                    await _logger.LogAsync($"PUT: api/sensor_data/{id} returned NotFound during concurrency check.");
+*/                    return NotFound();
                 }
                 else
                 {
-                    await _logger.LogAsync($"PUT: api/sensor_data/{id} encountered a concurrency exception.");
-                    throw;
+/*                    await _logger.LogAsync($"PUT: api/sensor_data/{id} encountered a concurrency exception.");
+*/                    throw;
                 }
             }
 
@@ -135,15 +167,15 @@ namespace aairos.Controllers
             var sensorData = await _context.sensor_data.FindAsync(id);
             if (sensorData == null)
             {
-                await _logger.LogAsync($"DELETE: api/sensor_data/{id} returned NotFound.");
-                return NotFound();
+/*                await _logger.LogAsync($"DELETE: api/sensor_data/{id} returned NotFound.");
+*/                return NotFound();
             }
 
             _context.sensor_data.Remove(sensorData);
             await _context.SaveChangesAsync();
 
-            await _logger.LogAsync($"DELETE: api/sensor_data/{id} deleted successfully.");
-            return NoContent();
+/*            await _logger.LogAsync($"DELETE: api/sensor_data/{id} deleted successfully.");
+*/            return NoContent();
         }
 
         private bool SensorDataExists(int id)

@@ -13,13 +13,13 @@ namespace aairos.Controllers
     [ApiController]
     public class devicedetailsController : ControllerBase
     {
-        private readonly FileLoggerService _logger;
-        private readonly devicedetailContext _context;
+/*        private readonly FileLoggerService _logger;
+*/        private readonly devicedetailContext _context;
 
         public devicedetailsController(devicedetailContext context, FileLoggerService logger)
         {
-            _logger = logger;
-            _context = context;
+/*            _logger = logger;
+*/            _context = context;
         }
 
         // GET: api/devicedetails
@@ -28,8 +28,8 @@ namespace aairos.Controllers
         {
             /*return await  _context.devicedetail.ToListAsync();*/
             var devicedetail = await _context.devicedetail.ToListAsync();
-            await _logger.LogAsync($"GET: api/devicedetails returned {devicedetail.Count} records.");
-            return Ok(devicedetail);
+/*            await _logger.LogAsync($"GET: api/devicedetails returned {devicedetail.Count} records.");
+*/            return Ok(devicedetail);
         }
 
         // GET: api/devicedetails/5
@@ -40,12 +40,12 @@ namespace aairos.Controllers
 
             if (devicedetail == null)
             {
-                await _logger.LogAsync($"GET: api/devicedetails/{id} returned NotFound.");
-                return NotFound();
+/*                await _logger.LogAsync($"GET: api/devicedetails/{id} returned NotFound.");
+*/                return NotFound();
             }
 
-            await _logger.LogAsync($"GET: api/devicedetails/{id} returned a record.");
-            return Ok(devicedetail);
+/*            await _logger.LogAsync($"GET: api/devicedetails/{id} returned a record.");
+*/            return Ok(devicedetail);
         }
 
         // GET: api/devicedetails/bydeviceId/5
@@ -56,12 +56,12 @@ namespace aairos.Controllers
 
             if (devicedetail == null)
             {
-                await _logger.LogAsync($"GET: api/devicedetails/byId/{Id} returned NotFound.");
-                return NotFound();
+/*                await _logger.LogAsync($"GET: api/devicedetails/byId/{Id} returned NotFound.");
+*/                return NotFound();
             }
 
-            await _logger.LogAsync($"GET: api/devicedetails/byId/{Id} returned a record.");
-            return Ok(devicedetail);
+/*            await _logger.LogAsync($"GET: api/devicedetails/byId/{Id} returned a record.");
+*/            return Ok(devicedetail);
         }
 
         // PUT: api/devicedetails/5
@@ -70,8 +70,8 @@ namespace aairos.Controllers
         {
             if (id != devicedetail.DeviceDetailId)
             {
-                await _logger.LogAsync($"PUT: api/devicedetails/{id} returned BadRequest due to ID mismatch.");
-                return BadRequest();
+/*                await _logger.LogAsync($"PUT: api/devicedetails/{id} returned BadRequest due to ID mismatch.");
+*/                return BadRequest();
             }
 
             _context.Entry(devicedetail).State = EntityState.Modified;
@@ -79,19 +79,19 @@ namespace aairos.Controllers
             try
             {
                 await _context.SaveChangesAsync();
-                await _logger.LogAsync($"PUT: api/devicedetails/{id} updated successfully.");
-            }
+/*                await _logger.LogAsync($"PUT: api/devicedetails/{id} updated successfully.");
+*/            }
             catch (DbUpdateConcurrencyException)
             {
                 if (!devicedetailExists(id))
                 {
-                    await _logger.LogAsync($"PUT: api/devicedetails/{id} returned NotFound during concurrency check.");
-                    return NotFound();
+/*                    await _logger.LogAsync($"PUT: api/devicedetails/{id} returned NotFound during concurrency check.");
+*/                    return NotFound();
                 }
                 else
                 {
-                    await _logger.LogAsync($"PUT: api/devicedetails/{id} encountered a concurrency exception.");
-                    throw;
+/*                    await _logger.LogAsync($"PUT: api/devicedetails/{id} encountered a concurrency exception.");
+*/                    throw;
                 }
             }
 
@@ -105,8 +105,8 @@ namespace aairos.Controllers
             _context.devicedetail.Add(devicedetail);
             await _context.SaveChangesAsync();
 
-            await _logger.LogAsync($"POST: api/devicedetails created a new record with ID {devicedetail.DeviceDetailId}.");
-            return CreatedAtAction("Getdevicedetail", new { id = devicedetail.DeviceDetailId }, devicedetail);
+/*            await _logger.LogAsync($"POST: api/devicedetails created a new record with ID {devicedetail.DeviceDetailId}.");
+*/            return CreatedAtAction("Getdevicedetail", new { id = devicedetail.DeviceDetailId }, devicedetail);
         }
 
         // DELETE: api/devicedetails/5
@@ -116,15 +116,15 @@ namespace aairos.Controllers
             var devicedetail = await _context.devicedetail.FindAsync(id);
             if (devicedetail == null)
             {
-                await _logger.LogAsync($"DELETE: api/devicedetails/{id} returned NotFound.");
-                return NotFound();
+/*                await _logger.LogAsync($"DELETE: api/devicedetails/{id} returned NotFound.");
+*/                return NotFound();
             }
 
             _context.devicedetail.Remove(devicedetail);
             await _context.SaveChangesAsync();
 
-            await _logger.LogAsync($"DELETE: api/devicedetails/{id} deleted successfully.");
-            return NoContent();
+/*            await _logger.LogAsync($"DELETE: api/devicedetails/{id} deleted successfully.");
+*/            return NoContent();
         }
 
         private bool devicedetailExists(int id)
