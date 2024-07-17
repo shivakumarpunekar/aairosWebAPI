@@ -7,6 +7,8 @@ using aairos.Data;
 using aairos.Model;
 using aairos.Dto;
 using aairos.Services;
+using Humanizer;
+using NuGet.Protocol.Plugins;
 
 namespace aairos.Controllers
 {
@@ -73,8 +75,44 @@ namespace aairos.Controllers
 */                return NotFound();
             }
 
-/*            await _logger.LogAsync($"GET: api/sensor_data/device/{deviceId} returned {data.Count} records.");
-*/            return Ok(data);
+            /*            await _logger.LogAsync($"GET: api/sensor_data/device/{deviceId} returned {data.Count} records.");
+            */            return Ok(data);
+        }
+
+
+
+        // This Method get sensor data by deviceId and within the last 7 days
+        // GET: api/sensor_data/device/{deviceId}/last7days
+        [HttpGet("device/{deviceId}/last7days")]
+        public async Task<ActionResult<IEnumerable<SensorDataDto>>> GetSensorDataByDeviceIdLast7Days(int deviceId)
+        {
+            var sevenDaysAgo = DateTime.UtcNow.AddDays(-7);
+
+            var data = await _context.sensor_data
+                .Where(s => s.deviceId == deviceId && s.timestamp >= sevenDaysAgo)
+                .OrderByDescending(s => s.timestamp)
+                .Take(500)
+                .Select(s => new SensorDataDto
+                {
+                    id = s.id,
+                    sensor1_value = s.sensor1_value,
+                    sensor2_value = s.sensor2_value,
+                    deviceId = s.deviceId,
+                    solenoidValveStatus = s.solenoidValveStatus ? "On" : "Off",
+                    timestamp = s.timestamp,
+                })
+                .ToListAsync();
+
+            if (!data.Any())
+            {
+/*              await _logger.LogAsync($"GET: api/sensor_data/device/{deviceId}/last7days returned NotFound.");
+*/
+                return NotFound();
+            }
+
+/*              await _logger.LogAsync($"GET: api/sensor_data/device/{deviceId}/last7days returned {data.Count} records.");
+*/
+            return Ok(data);
         }
 
 
