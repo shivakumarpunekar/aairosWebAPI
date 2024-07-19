@@ -37,6 +37,25 @@ namespace aairos.Controllers
             return userprofiles;
         }
 
+        // GET: api/userprofileByName
+        [HttpGet("GetuserprofileByName")]
+        public async Task<ActionResult<IEnumerable<object>>> GetuserprofileByName()
+        {
+            var userprofiles = await _context.UserProfile
+                .Select(up => new
+                {
+                    up.UserProfileId,
+                    up.FirstName,
+                    up.MiddleName,
+                    up.LastName
+                })
+                .ToListAsync();
+
+            return Ok(userprofiles);
+        }
+
+
+
         //This is a guId GET Methode
         [HttpGet("byGuId/{guId}")]
         public async Task<ActionResult<userprofile>> GetUserProfileByGuId(string GuId)

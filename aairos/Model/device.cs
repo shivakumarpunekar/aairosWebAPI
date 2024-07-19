@@ -4,7 +4,7 @@
     {
         public int Id { get; set; }
         public int LoginId { get; set; }
-        public Guid GuId { get; set; } = Guid.NewGuid();
+        public string GuId { get; set; }
         public int UserProfileId { get; set; }
         public int DeviceId { get; set; }
         public DateTime CreatedDate { get; set; }
