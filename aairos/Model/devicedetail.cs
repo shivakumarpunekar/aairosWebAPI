@@ -9,7 +9,7 @@ namespace aairos.Model
         public int Id { get; set; }
         public int LoginId { get; set; }
         public int UserProfileId { get; set; }
-        public string GuId { get; set; }
+        public Guid GuId { get; set; } = Guid.NewGuid();
         public int DeviceId { get; set; }
         public int Sensor_1 { get; set; }
         public int Sensor_2 { get; set; }
