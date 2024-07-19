@@ -35,7 +35,7 @@ namespace aairos.Controllers
 
         // GET api/userdevice/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<UserDevice>> GetUserDevice(int id)
+        public async Task<ActionResult<UserDeviceDto>> GetUserDevice(int id)
         {
             var userDevice = await _context.UserDevice
                 .Include(ud => ud.userprofile)
@@ -53,12 +53,24 @@ namespace aairos.Controllers
             _context.Entry(userDevice).State = EntityState.Modified;
             await _context.SaveChangesAsync();
 
-            return Ok(userDevice);
+            var userDeviceDto = new UserDeviceDto
+            {
+                userDeviceId = userDevice.userDeviceId,
+                profileId = userDevice.profileId,
+                sensor_dataId = userDevice.sensor_dataId,
+                deviceStatus = userDevice.deviceStatus ? "On" : "Off",  // Convert bool to "On" or "Off"
+                createdDate = userDevice.createdDate,
+                updatedDate = userDevice.updatedDate
+            };
+
+            return Ok(userDeviceDto);
         }
+
 
         // POST api/userdevice
         [HttpPost]
-        public async Task<ActionResult<UserDevice>> PostUserDevice([FromBody] UserDevice value)
+        [HttpPost]
+        public async Task<ActionResult<UserDeviceDto>> PostUserDevice([FromBody] UserDevice value)
         {
             value.createdDate = DateTime.UtcNow;
             value.updatedDate = DateTime.UtcNow;
@@ -66,7 +78,17 @@ namespace aairos.Controllers
             _context.UserDevice.Add(value);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetUserDevice), new { id = value.userDeviceId }, value);
+            var userDeviceDto = new UserDeviceDto
+            {
+                userDeviceId = value.userDeviceId,
+                profileId = value.profileId,
+                sensor_dataId = value.sensor_dataId,
+                deviceStatus = value.deviceStatus ? "On" : "Off",  // Convert bool to "On" or "Off"
+                createdDate = value.createdDate,
+                updatedDate = value.updatedDate
+            };
+
+            return CreatedAtAction(nameof(GetUserDevice), new { id = value.userDeviceId }, userDeviceDto);
         }
 
         // PUT api/userdevice/5
@@ -77,6 +99,8 @@ namespace aairos.Controllers
             {
                 return BadRequest();
             }
+
+            value.updatedDate = DateTime.UtcNow;  // Ensure updatedDate is set
 
             _context.Entry(value).State = EntityState.Modified;
 
