@@ -14,105 +14,84 @@ namespace aairos.Controllers
     [ApiController]
     public class UserDeviceController : ControllerBase
     {
-        private readonly UserDeviceContext _userdeviceContext;
+        private readonly UserDeviceContext _context;
 
-        public UserDeviceController(UserDeviceContext context, FileLoggerService logger)
+        public UserDeviceController(UserDeviceContext context)
         {
-            /*            _logger = logger;
-            */
-            _userdeviceContext = context;
+            _context = context;
         }
 
-        // GET: api/<userdevicesController>
+        // GET: api/userdevice
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserDevice>>> Getuserdevices()
+        public async Task<ActionResult<IEnumerable<UserDevice>>> GetUserDevices()
         {
-            /*return await  _context.userdevice.ToListAsync();*/
+            var userDevices = await _context.UserDevice
+                .Include(ud => ud.userprofile)
+                .Include(ud => ud.sensor_data)
+                .ToListAsync();
 
-            var userdevice = await _userdeviceContext.UserDevice.ToListAsync();
-
-/*            await _logger.LogAsync($"GET: api/userdevices returned {userdevices.Count} records.");
-*/
-            return userdevice;
+            return Ok(userDevices);
         }
 
-        // GET api/<userdevicesController>/5
+        // GET api/userdevice/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<UserDevice>> Getuserdevice(int id)
+        public async Task<ActionResult<UserDevice>> GetUserDevice(int id)
         {
-            var userdevices = await _userdeviceContext.UserDevice.FindAsync(id);
+            var userDevice = await _context.UserDevice
+                .Include(ud => ud.userprofile)
+                .Include(ud => ud.sensor_data)
+                .FirstOrDefaultAsync(ud => ud.userDeviceId == id);
 
-            if (userdevices == null)
+            if (userDevice == null)
             {
-/*                await _logger.LogAsync($"GET: api/userdevices/{id} returned NotFound.");
-*/
                 return NotFound();
             }
 
             // Update the UpdatedDate field
-            userdevices.updatedDate = DateTime.UtcNow;
+            userDevice.updatedDate = DateTime.UtcNow;
 
-            _userdeviceContext.Entry(userdevices).State = EntityState.Modified;
-            await _userdeviceContext.SaveChangesAsync();
+            _context.Entry(userDevice).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
 
-/*            await _logger.LogAsync($"GET: api/userdevices/{id} returned a user device.");
-*/
-            return userdevices;
+            return Ok(userDevice);
         }
 
-        // POST api/<userdevicesController>
+        // POST api/userdevice
         [HttpPost]
-        public async Task<ActionResult<UserDevice>> Postuserdevice([FromBody] UserDevice value)
+        public async Task<ActionResult<UserDevice>> PostUserDevice([FromBody] UserDevice value)
         {
-            _userdeviceContext.UserDevice.Add(value);
-            await _userdeviceContext.SaveChangesAsync();
+            value.createdDate = DateTime.UtcNow;
+            value.updatedDate = DateTime.UtcNow;
 
-            var userDevicesDto = new UserDeviceDto
-            {
-                userDeviceId = value.userDeviceId,
-                profileId = value.profileId,
-                sensor_dataId = value.sensor_dataId,
-                deviceStatus = value.deviceStatus ? "On" : "Off",
-                createdDate = value.createdDate,
-                updatedDate = value.updatedDate,
-            };
+            _context.UserDevice.Add(value);
+            await _context.SaveChangesAsync();
 
-/*            await _logger.LogAsync($"POST: api/userdevice created a new record with ID {value.id}.");
-*/
-            return CreatedAtAction(nameof(Getuserdevice), new { Id = value.userDeviceId }, userDevicesDto);
+            return CreatedAtAction(nameof(GetUserDevice), new { id = value.userDeviceId }, value);
         }
 
-        // PUT api/<userdevicesController>/5
+        // PUT api/userdevice/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Putusserdevice(int id, [FromBody] UserDevice value)
+        public async Task<IActionResult> PutUserDevice(int id, [FromBody] UserDevice value)
         {
             if (id != value.userDeviceId)
             {
-/*                await _logger.LogAsync($"PUT: api/userdevice/{id} returned BadRequest due to ID mismatch.");
-*/
                 return BadRequest();
             }
 
-            _userdeviceContext.Entry(value).State = EntityState.Modified;
+            _context.Entry(value).State = EntityState.Modified;
 
             try
             {
-                await _userdeviceContext.SaveChangesAsync();
-/*                await _logger.LogAsync($"PUT: api/userdevice/{id} updated successfully.");
-*/
+                await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!userdeviceExists(id))
+                if (!_context.UserDevice.Any(e => e.userDeviceId == id))
                 {
-/*                    await _logger.LogAsync($"PUT: api/userdevice/{id} returned NotFound during concurrency check.");
-*/
                     return NotFound();
                 }
                 else
                 {
-/*                    await _logger.LogAsync($"PUT: api/userdevice/{id} encountered a concurrency exception.");
-*/
                     throw;
                 }
             }
@@ -120,31 +99,21 @@ namespace aairos.Controllers
             return NoContent();
         }
 
-        // DELETE api/<userdevicesController>/5
+        // DELETE api/userdevice/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Deleteuserdevices(int id)
+        public async Task<IActionResult> DeleteUserDevice(int id)
         {
-            var userdevice = await _userdeviceContext.UserDevice.FindAsync(id);
-            if (userdevice == null)
-
+            var userDevice = await _context.UserDevice.FindAsync(id);
+            if (userDevice == null)
             {
-/*                await _logger.LogAsync($"DELETE: api/userdevices/{id} returned NotFound.");
-*/
                 return NotFound();
             }
 
-            _userdeviceContext.UserDevice.Remove(userdevice);
-            await _userdeviceContext.SaveChangesAsync();
+            _context.UserDevice.Remove(userDevice);
+            await _context.SaveChangesAsync();
 
-/*            await _logger.LogAsync($"DELETE: api/userdevice/{id} deleted successfully.");
-*/
             return NoContent();
-        }
-
-        private bool userdeviceExists(int id)
-        {
-            return _userdeviceContext.UserDevice.Any(e => e.userDeviceId == id);
         }
     }
 }
-        
+
