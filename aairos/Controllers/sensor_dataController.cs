@@ -50,6 +50,19 @@ namespace aairos.Controllers
         }
 
 
+        // GET: api/userprofileByName
+        [HttpGet("deviceId")]
+        public async Task<ActionResult<IEnumerable<object>>> GetUniqueDeviceIds()
+        {
+            var uniqueDeviceIds = await _context.sensor_data
+                .Select(s => s.deviceId)
+                .Distinct()
+                .ToListAsync();
+
+            return Ok(uniqueDeviceIds);
+        }
+
+
         // GET: api/sensor_data/device/{deviceId}
         [HttpGet("device/{deviceId}")]
         public async Task<ActionResult<IEnumerable<SensorDataDto>>> GetSensorDataByDeviceId(int deviceId)

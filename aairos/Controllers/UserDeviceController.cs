@@ -74,25 +74,23 @@ namespace aairos.Controllers
 
         // POST api/<userdevicesController>
         [HttpPost]
-        public async Task<ActionResult<UserDevice>> Postuserdevice([FromBody] UserDevice value)
+        public async Task<ActionResult<UserDeviceDto>> Postuserdevice([FromBody] UserDeviceDto userDeviceDto)
         {
-            _userdeviceContext.UserDevice.Add(value);
-            await _userdeviceContext.SaveChangesAsync();
-
-            var userDevicesDto = new UserDeviceDto
+            var userDevice = new UserDevice
             {
-                userDeviceId = value.userDeviceId,
-                profileId = value.profileId,
-                sensor_dataId = value.sensor_dataId,
-                deviceStatus = value.deviceStatus ? "Active" : "InActive",
-                createdDate = value.createdDate,
-                updatedDate = value.updatedDate,
+                profileId = userDeviceDto.profileId,
+                sensor_dataId = userDeviceDto.sensor_dataId,
+                deviceStatus = userDeviceDto.deviceStatus == "Active",
+                createdDate = DateTime.UtcNow,
+                updatedDate = DateTime.UtcNow
             };
 
-/*            await _logger.LogAsync($"POST: api/userdevice created a new record with ID {value.id}.");
-*/
-            return CreatedAtAction(nameof(Getuserdevice), new { Id = value.userDeviceId }, userDevicesDto);
+            _userdeviceContext.UserDevice.Add(userDevice);
+            await _userdeviceContext.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(Getuserdevice), new { id = userDevice.userDeviceId }, userDeviceDto);
         }
+
 
         // PUT api/<userdevicesController>/5
         [HttpPut("{id}")]
