@@ -76,6 +76,15 @@ namespace aairos.Controllers
         [HttpPost]
         public async Task<ActionResult<UserDeviceDto>> Postuserdevice([FromBody] UserDeviceDto userDeviceDto)
         {
+            // Check if the user already has the device
+            var existingUserDevice = await _userdeviceContext.UserDevice
+                .FirstOrDefaultAsync(ud => ud.profileId == userDeviceDto.profileId && ud.sensor_dataId == userDeviceDto.sensor_dataId);
+
+            if (existingUserDevice != null)
+            {
+                return BadRequest("User already has the device.");
+            }
+
             var userDevice = new UserDevice
             {
                 profileId = userDeviceDto.profileId,
