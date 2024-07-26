@@ -1,11 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using aairos.Data;
 using aairos.Model;
-using Microsoft.AspNetCore.Authorization;
 using aairos.Services;
 
 namespace aairos.Controllers

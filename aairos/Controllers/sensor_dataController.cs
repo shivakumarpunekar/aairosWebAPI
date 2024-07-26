@@ -1,14 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using aairos.Data;
 using aairos.Model;
 using aairos.Dto;
 using aairos.Services;
-using Humanizer;
-using NuGet.Protocol.Plugins;
 
 namespace aairos.Controllers
 {
@@ -31,7 +26,7 @@ namespace aairos.Controllers
         public async Task<ActionResult<IEnumerable<sensor_data>>> GetSensorData()
         {
             var data = await _context.sensor_data
-                .OrderByDescending(s => s.timestamp)
+                .OrderByDescending(s => s.createdDateTime)
                 .Take(100)
                 .Select(s => new SensorDataDto
                 {
@@ -133,7 +128,7 @@ namespace aairos.Controllers
         {
             var data = await _context.sensor_data
                 .Where(s => s.deviceId == deviceId)
-                .OrderByDescending(s => s.timestamp)
+                .OrderByDescending(s => s.createdDateTime)
                 .Take(100)
                 .Select(s => new SensorDataDto
                 {

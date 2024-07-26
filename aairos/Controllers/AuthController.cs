@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using aairos.Data;
 using aairos.Model;
 using aairos.Services;
-using System.Threading.Tasks;
 
 namespace aairos.Controllers
 {
