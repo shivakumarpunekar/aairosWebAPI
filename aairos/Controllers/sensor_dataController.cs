@@ -41,6 +41,7 @@ namespace aairos.Controllers
                     deviceId = s.deviceId,
                     solenoidValveStatus = s.solenoidValveStatus ? "On" : "Off",
                     timestamp = s.timestamp,
+                    createdDateTime = s.createdDateTime,
                 })
                 .ToListAsync();
 
@@ -50,7 +51,70 @@ namespace aairos.Controllers
         }
 
 
-        // GET: api/userprofileByName
+        // GET: api/sensor_data/top100perdevice
+        [HttpGet("top100perdevice")]
+        public async Task<ActionResult<IEnumerable<SensorDataDto>>> GetTop100SensorDataPerDevice()
+        {
+            var top100PerDevice = await _context.sensor_data
+             .FromSqlRaw(@"
+                SELECT * FROM (
+                  SELECT
+                    *,
+                    DENSE_RANK() OVER (PARTITION BY deviceId ORDER BY id DESC) AS r
+                  FROM sensor_data
+                ) AS t
+                WHERE t.r <= 100 order by 1 desc")
+             .Select(s => new SensorDataDto
+             {
+                 id = s.id,
+                 sensor1_value = s.sensor1_value,
+                 sensor2_value = s.sensor2_value,
+                 deviceId = s.deviceId,
+                 solenoidValveStatus = s.solenoidValveStatus ? "On" : "Off",
+                 timestamp = s.timestamp,
+                 createdDateTime = s.createdDateTime,
+
+             })
+             .ToListAsync();
+            return Ok(top100PerDevice);
+
+        }
+
+
+
+
+        // GET: api/sensor_data/profile/{profileId}/device/{deviceId}
+        [HttpGet("profile/{profileId}/device/{deviceId}")]
+        public async Task<ActionResult<IEnumerable<SensorDataDto>>> GetSensorDataByProfileIdAndDeviceId(int profileId, int deviceId)
+        {
+            var data = await (from sd in _context.sensor_data
+                              join ud in _context.UserDevice on sd.deviceId equals ud.deviceId
+                              where ud.profileId == profileId && sd.deviceId == deviceId
+                              orderby sd.id descending
+                              select new SensorDataDto
+                              {
+                                  id = sd.id,
+                                  sensor1_value = sd.sensor1_value,
+                                  sensor2_value = sd.sensor2_value,
+                                  deviceId = sd.deviceId,
+                                  solenoidValveStatus = sd.solenoidValveStatus ? "On" : "Off",
+                                  timestamp = sd.timestamp,
+                                  createdDateTime = sd.createdDateTime
+                              }).ToListAsync();
+
+            if (data == null || !data.Any())
+            {
+                return NotFound();
+            }
+
+            return Ok(data);
+        }
+
+
+
+
+
+        // GET: api/GetUniqueDeviceIds
         [HttpGet("deviceId")]
         public async Task<ActionResult<IEnumerable<object>>> GetUniqueDeviceIds()
         {
@@ -79,6 +143,7 @@ namespace aairos.Controllers
                     deviceId = s.deviceId,
                     solenoidValveStatus = s.solenoidValveStatus ? "On" : "Off",
                     timestamp = s.timestamp,
+                    createdDateTime = s.createdDateTime,
                 })
                 .ToListAsync();
 
@@ -104,7 +169,7 @@ namespace aairos.Controllers
             var data = await _context.sensor_data
                 .Where(s => s.deviceId == deviceId && s.timestamp >= sevenDaysAgo)
                 .OrderByDescending(s => s.timestamp)
-                .Take(500)
+                .Take(100)
                 .Select(s => new SensorDataDto
                 {
                     id = s.id,
@@ -113,6 +178,7 @@ namespace aairos.Controllers
                     deviceId = s.deviceId,
                     solenoidValveStatus = s.solenoidValveStatus ? "On" : "Off",
                     timestamp = s.timestamp,
+                    createdDateTime = s.createdDateTime,
                 })
                 .ToListAsync();
 
@@ -143,6 +209,7 @@ namespace aairos.Controllers
                     deviceId = s.deviceId,
                     solenoidValveStatus = s.solenoidValveStatus ? "On" : "Off",
                     timestamp = s.timestamp,
+                    createdDateTime = s.createdDateTime,
                 })
                 .FirstOrDefaultAsync(s => s.id == id);
 
@@ -171,6 +238,7 @@ namespace aairos.Controllers
                 deviceId = value.deviceId,
                 solenoidValveStatus = value.solenoidValveStatus ? "On" : "Off",
                 timestamp = value.timestamp,
+                createdDateTime = value.createdDateTime,
             };
 
 /*            await _logger.LogAsync($"POST: api/sensor_data created a new record with ID {value.id}.");
@@ -228,6 +296,59 @@ namespace aairos.Controllers
 /*            await _logger.LogAsync($"DELETE: api/sensor_data/{id} deleted successfully.");
 */            return NoContent();
         }
+
+
+
+        // GET: api/sensor_data/device/{deviceId}/sensor1
+        [HttpGet("device/{deviceId}/sensor1")]
+        public async Task<ActionResult<IEnumerable<SensorDataDto>>> GetSensor1DataByDeviceId(int deviceId)
+        {
+            var data = await _context.sensor_data
+                .Where(s => s.deviceId == deviceId)
+                .OrderByDescending(s => s.timestamp)
+                .Take(100)
+                .Select(s => new SensorDataDto
+                {
+                    id = s.id,
+                    sensor1_value = s.sensor1_value,
+                    timestamp = s.timestamp,
+                })
+                .ToListAsync();
+
+            if (!data.Any())
+            {
+                return NotFound();
+            }
+
+            return Ok(data);
+        }
+
+
+
+        // GET: api/sensor_data/device/{deviceId}/sensor2
+        [HttpGet("device/{deviceId}/sensor2")]
+        public async Task<ActionResult<IEnumerable<SensorDataDto>>> GetSensor2DataByDeviceId(int deviceId)
+        {
+            var data = await _context.sensor_data
+                .Where(s => s.deviceId == deviceId)
+                .OrderByDescending(s => s.timestamp)
+                .Take(100)
+                .Select(s => new SensorDataDto
+                {
+                    id = s.id,
+                    sensor2_value = s.sensor2_value,
+                    timestamp = s.timestamp,
+                })
+                .ToListAsync();
+
+            if (!data.Any())
+            {
+                return NotFound();
+            }
+
+            return Ok(data);
+        }
+
 
         private bool SensorDataExists(int id)
         {

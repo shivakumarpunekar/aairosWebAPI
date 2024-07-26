@@ -35,7 +35,7 @@ namespace aairos.Controllers
             {
                 userDeviceId = ud.userDeviceId,
                 profileId = ud.profileId,
-                sensor_dataId = ud.sensor_dataId,
+                deviceId = ud.deviceId,
                 deviceStatus = ud.deviceStatus ? "Active" : "InActive",
                 createdDate = ud.createdDate,
                 updatedDate = ud.updatedDate,
@@ -62,7 +62,7 @@ namespace aairos.Controllers
             {
                 userDeviceId = userDevice.userDeviceId,
                 profileId = userDevice.profileId,
-                sensor_dataId = userDevice.sensor_dataId,
+                deviceId = userDevice.deviceId,
                 deviceStatus = userDevice.deviceStatus ? "Active" : "InActive",
                 createdDate = userDevice.createdDate,
                 updatedDate = userDevice.updatedDate,
@@ -72,13 +72,42 @@ namespace aairos.Controllers
         }
 
 
+        // GET api/<userdevicesController>/byProfile/{profileId}
+        [HttpGet("byProfile/{profileId}")]
+        public async Task<ActionResult<IEnumerable<UserDeviceDto>>> GetUserDevicesByProfile(int profileId)
+        {
+            var userDevices = await _userdeviceContext.UserDevice
+                .Where(ud => ud.profileId == profileId)
+                .ToListAsync();
+
+            if (userDevices == null || userDevices.Count == 0)
+            {
+                return NotFound();
+            }
+
+            var userDeviceDtos = userDevices.Select(ud => new UserDeviceDto
+            {
+                userDeviceId = ud.userDeviceId,
+                profileId = ud.profileId,
+                deviceId = ud.deviceId,
+                deviceStatus = ud.deviceStatus ? "Active" : "InActive",
+                createdDate = ud.createdDate,
+                updatedDate = ud.updatedDate,
+            }).ToList();
+
+            return Ok(userDeviceDtos);
+        }
+
+
+
+
         // POST api/<userdevicesController>
         [HttpPost]
         public async Task<ActionResult<UserDeviceDto>> Postuserdevice([FromBody] UserDeviceDto userDeviceDto)
         {
             // Check if the user already has the device
             var existingUserDevice = await _userdeviceContext.UserDevice
-                .FirstOrDefaultAsync(ud => ud.profileId == userDeviceDto.profileId && ud.sensor_dataId == userDeviceDto.sensor_dataId);
+                .FirstOrDefaultAsync(ud => ud.profileId == userDeviceDto.profileId && ud.deviceId == userDeviceDto.deviceId);
 
             if (existingUserDevice != null)
             {
@@ -88,7 +117,7 @@ namespace aairos.Controllers
             var userDevice = new UserDevice
             {
                 profileId = userDeviceDto.profileId,
-                sensor_dataId = userDeviceDto.sensor_dataId,
+                deviceId = userDeviceDto.deviceId,
                 deviceStatus = userDeviceDto.deviceStatus == "Active",
                 createdDate = DateTime.UtcNow,
                 updatedDate = DateTime.UtcNow

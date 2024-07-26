@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using aairos.Model;
+using Microsoft.EntityFrameworkCore;
 
 namespace aairos.Data
 {
@@ -10,5 +11,6 @@ namespace aairos.Data
         }
 
         public DbSet<aairos.Model.sensor_data> sensor_data { get; set; }
+        public DbSet<aairos.Model.UserDevice> UserDevice { get; set; }
     }
 }
