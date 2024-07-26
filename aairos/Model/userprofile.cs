@@ -3,7 +3,7 @@
     public class userprofile
     {
         public int UserProfileId { get; set; }
-        public string GuId { get; set; }
+        public string? GuId { get; set; }
         public string? FirstName { get; set; }
         public string? MiddleName { get; set; }
         public string? LastName { get; set; }

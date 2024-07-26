@@ -26,7 +26,7 @@ namespace aairos.Controllers
         public async Task<ActionResult<IEnumerable<sensor_data>>> GetSensorData()
         {
             var data = await _context.sensor_data
-                .OrderByDescending(s => s.createdDateTime)
+                .OrderByDescending(s => s.timestamp)
                 .Take(100)
                 .Select(s => new SensorDataDto
                 {
@@ -85,7 +85,7 @@ namespace aairos.Controllers
             var data = await (from sd in _context.sensor_data
                               join ud in _context.UserDevice on sd.deviceId equals ud.deviceId
                               where ud.profileId == profileId && sd.deviceId == deviceId
-                              orderby sd.id descending
+                              orderby sd.timestamp descending
                               select new SensorDataDto
                               {
                                   id = sd.id,
@@ -128,7 +128,7 @@ namespace aairos.Controllers
         {
             var data = await _context.sensor_data
                 .Where(s => s.deviceId == deviceId)
-                .OrderByDescending(s => s.createdDateTime)
+                .OrderByDescending(s => s.timestamp)
                 .Take(100)
                 .Select(s => new SensorDataDto
                 {
@@ -179,15 +179,12 @@ namespace aairos.Controllers
 
             if (!data.Any())
             {
-/*              await _logger.LogAsync($"GET: api/sensor_data/device/{deviceId}/last7days returned NotFound.");
-*/
                 return NotFound();
             }
 
-/*              await _logger.LogAsync($"GET: api/sensor_data/device/{deviceId}/last7days returned {data.Count} records.");
-*/
             return Ok(data);
         }
+
 
 
 
@@ -196,6 +193,7 @@ namespace aairos.Controllers
         public async Task<ActionResult<sensor_data>> GetSensorData(int id)
         {
             var sensorData = await _context.sensor_data
+                .Where(s => s.id == id)
                 .Select(s => new SensorDataDto
                 {
                     id = s.id,
@@ -305,8 +303,10 @@ namespace aairos.Controllers
                 .Select(s => new SensorDataDto
                 {
                     id = s.id,
+                    deviceId = s.deviceId,
                     sensor1_value = s.sensor1_value,
                     timestamp = s.timestamp,
+                    createdDateTime = s.createdDateTime,
                 })
                 .ToListAsync();
 
@@ -331,8 +331,10 @@ namespace aairos.Controllers
                 .Select(s => new SensorDataDto
                 {
                     id = s.id,
+                    deviceId = s.deviceId,
                     sensor2_value = s.sensor2_value,
                     timestamp = s.timestamp,
+                    createdDateTime = s.createdDateTime,
                 })
                 .ToListAsync();
 

@@ -85,7 +85,7 @@ namespace aairos.Controllers
             {
                 UserName = newUser.Username,
                 Password = newUser.Password,
-                IsAdmin = newUser.IsAdmin
+                IsAdmin = newUser.IsAdmin 
             };
 
             _context.Login.Add(user);
