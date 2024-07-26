@@ -5,7 +5,6 @@ using System.Configuration;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using aairos.Handular;
 using aairos.Services;
 var builder = WebApplication.CreateBuilder(args);
 
@@ -75,11 +74,7 @@ builder.Services.AddDbContext<LoginContext>(options =>
 
 
 builder.Services.AddAuthorization();
-builder.Services.AddControllers()
-     .AddJsonOptions(options =>
-     {
-         options.JsonSerializerOptions.Converters.Add(new JsonDateConverter());
-     });
+builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

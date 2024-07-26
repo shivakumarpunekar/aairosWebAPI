@@ -1,5 +1,4 @@
 ﻿using aairos.Data;
-using aairos.Handular;
 using aairos.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -59,11 +58,7 @@ namespace aairos
                     });
             });
 
-            services.AddControllers()
-                .AddJsonOptions(options =>
-                {
-                    options.JsonSerializerOptions.Converters.Add(new JsonDateConverter());
-                });
+            services.AddControllers();
 
 
 
