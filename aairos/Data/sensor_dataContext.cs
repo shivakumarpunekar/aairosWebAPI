@@ -12,5 +12,6 @@ namespace aairos.Data
 
         public DbSet<aairos.Model.sensor_data> sensor_data { get; set; }
         public DbSet<aairos.Model.UserDevice> UserDevice { get; set; }
+        public DbSet<aairos.Model.userprofile> UserProfile { get; set; }
     }
 }

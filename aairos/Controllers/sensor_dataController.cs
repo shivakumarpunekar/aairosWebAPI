@@ -4,6 +4,8 @@ using aairos.Data;
 using aairos.Model;
 using aairos.Dto;
 using aairos.Services;
+using OfficeOpenXml;
+using System.IO;
 
 namespace aairos.Controllers
 {
@@ -345,6 +347,61 @@ namespace aairos.Controllers
 
             return Ok(data);
         }
+
+
+        [HttpGet("export")]
+        public async Task<IActionResult> ExportToExcel([FromQuery] int profileId, [FromQuery] int deviceId, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        {
+            var sensorData = await (from sd in _context.sensor_data
+                                    join ud in _context.UserDevice on sd.deviceId equals ud.deviceId
+                                    join up in _context.UserProfile on ud.profileId equals up.UserProfileId
+                                    where ud.profileId == profileId && sd.deviceId == deviceId
+                                    && sd.timestamp >= startDate && sd.timestamp <= endDate
+                                    select new
+                                    {
+                                        Username = $"{up.FirstName} {up.MiddleName} {up.LastName}",
+                                        sd.deviceId,
+                                        sd.sensor1_value,
+                                        sd.sensor2_value,
+                                        solenoidValveStatus = sd.solenoidValveStatus ? "On" : "Off",
+                                        sd.createdDateTime
+                                    }).ToListAsync();
+
+            if (!sensorData.Any())
+            {
+                return NotFound();
+            }
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            using (var package = new ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add("Sensor Data");
+                worksheet.Cells["A1"].Value = "Username";
+                worksheet.Cells["B1"].Value = "Device ID";
+                worksheet.Cells["C1"].Value = "Sensor 1 Value";
+                worksheet.Cells["D1"].Value = "Sensor 2 Value";
+                worksheet.Cells["E1"].Value = "Solenoid Valve Status";
+                worksheet.Cells["F1"].Value = "Created DateTime";
+
+                var row = 2;
+                foreach (var data in sensorData)
+                {
+                    worksheet.Cells[$"A{row}"].Value = data.Username;
+                    worksheet.Cells[$"B{row}"].Value = data.deviceId;
+                    worksheet.Cells[$"C{row}"].Value = data.sensor1_value;
+                    worksheet.Cells[$"D{row}"].Value = data.sensor2_value;
+                    worksheet.Cells[$"E{row}"].Value = data.solenoidValveStatus;
+                    worksheet.Cells[$"F{row}"].Value = data.createdDateTime;
+                    row++;
+                }
+
+                var stream = new MemoryStream();
+                package.SaveAs(stream);
+                stream.Position = 0;
+                var fileName = $"SensorData_{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.xlsx";
+                return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+            }
+        }
+
 
 
         private bool SensorDataExists(int id)
