@@ -190,8 +190,42 @@ namespace aairos.Controllers
             return Ok(uniqueDates);
         }
 
+        // GET: api/sensor_data/date/{date}/device/{deviceId}
+        [HttpGet("date/{date}/device/{deviceId}")]
+        public async Task<ActionResult<IEnumerable<SensorDataDto>>> GetSensorDataByDate(DateTime date, int deviceId)
+        {
+            // Calculate the start and end of the day based on the provided date
+            var startOfDay = date.Date;
+            var endOfDay = startOfDay.AddDays(1).AddTicks(-1);
 
+            // Fetch all data for the provided deviceId and filter by solenoidValveStatus
+            var allData = await _context.sensor_data
+                .Where(s => s.deviceId == deviceId) // Filter by deviceId and solenoidValveStatus
+                .ToListAsync();
 
+            var data = allData
+                .Where(s => DateTime.TryParse(s.createdDateTime, out var createdDateTime) &&
+                            createdDateTime >= startOfDay && createdDateTime <= endOfDay)
+                .OrderByDescending(s => s.timestamp)
+                .Select(s => new SensorDataDto
+                {
+                    id = s.id,
+                    sensor1_value = s.sensor1_value,
+                    sensor2_value = s.sensor2_value,
+                    deviceId = s.deviceId,
+                    solenoidValveStatus = "On", // Set status to "On" since we filtered only "On" status records
+                    timestamp = s.timestamp,
+                    createdDateTime = s.createdDateTime,
+                })
+                .ToList();
+
+            if (!data.Any())
+            {
+                return NotFound();
+            }
+
+            return Ok(data);
+        }
 
         // GET api/sensor_data/5
         [HttpGet("{id}")]
@@ -404,49 +438,6 @@ namespace aairos.Controllers
                 return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
             }
         }
-
-        // GET: api/sensor_data/date/{date}/device/{deviceId}
-        [HttpGet("date/{date}/device/{deviceId}")]
-        public async Task<ActionResult<IEnumerable<SensorDataDto>>> GetSensorDataByDate(DateTime date, int deviceId)
-        {
-            // Calculate the start and end of the day based on the provided date
-            var startOfDay = date.Date;
-            var endOfDay = startOfDay.AddDays(1).AddTicks(-1);
-
-            // Fetch all data for the provided deviceId and filter by solenoidValveStatus
-            var allData = await _context.sensor_data
-                .Where(s => s.deviceId == deviceId) // Filter by deviceId and solenoidValveStatus
-                .ToListAsync();
-
-            var data = allData
-                .Where(s => DateTime.TryParse(s.createdDateTime, out var createdDateTime) &&
-                            createdDateTime >= startOfDay && createdDateTime <= endOfDay)
-                .OrderByDescending(s => s.timestamp)
-                .Select(s => new SensorDataDto
-                {
-                    id = s.id,
-                    sensor1_value = s.sensor1_value,
-                    sensor2_value = s.sensor2_value,
-                    deviceId = s.deviceId,
-                    solenoidValveStatus = "On", // Set status to "On" since we filtered only "On" status records
-                    timestamp = s.timestamp,
-                    createdDateTime = s.createdDateTime,
-                })
-                .ToList();
-
-            if (!data.Any())
-            {
-                return NotFound();
-            }
-
-            return Ok(data);
-        }
-
-
-
-
-
-
 
         private bool SensorDataExists(int id)
         {
