@@ -163,7 +163,7 @@ namespace aairos.Controllers
 
             // Fetch all data from the database for this deviceId
             var data = await _context.sensor_data
-                .Where(s => s.deviceId == deviceId)
+                .Where(s => s.deviceId == deviceId && s.solenoidValveStatus == true )
                 .Select(s => s.createdDateTime) // This is a string in your case
                 .ToListAsync();
 
@@ -200,7 +200,7 @@ namespace aairos.Controllers
 
             // Fetch all data for the provided deviceId and filter by solenoidValveStatus
             var allData = await _context.sensor_data
-                .Where(s => s.deviceId == deviceId) // Filter by deviceId and solenoidValveStatus
+                .Where(s => s.deviceId == deviceId && s.solenoidValveStatus == true) // Filter by deviceId and solenoidValveStatus
                 .ToListAsync();
 
             var data = allData
@@ -213,7 +213,7 @@ namespace aairos.Controllers
                     sensor1_value = s.sensor1_value,
                     sensor2_value = s.sensor2_value,
                     deviceId = s.deviceId,
-                    solenoidValveStatus = "On", // Set status to "On" since we filtered only "On" status records
+                    solenoidValveStatus = s.solenoidValveStatus ? "On" : "Off",
                     timestamp = s.timestamp,
                     createdDateTime = s.createdDateTime,
                 })
