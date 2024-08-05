@@ -154,37 +154,40 @@ namespace aairos.Controllers
             */            return Ok(data);
         }
 
-
-
-        // This Method get sensor data by deviceId and within the last 7 days
-        // GET: api/sensor_data/device/{deviceId}/last7days
-        [HttpGet("device/{deviceId}/last7days")]
-        public async Task<ActionResult<IEnumerable<SensorDataDto>>> GetSensorDataByDeviceIdLast7Days(int deviceId)
+        //This is based on date for 30 days
+        // GET: api/uniqueDatesLast30Days
+        [HttpGet("device/{deviceId}/uniqueDatesLast30Days")]
+        public async Task<ActionResult<IEnumerable<DateTime>>> GetUniqueCreatedDatesByDeviceIdLast30Days(int deviceId)
         {
-            var sevenDaysAgo = DateTime.UtcNow.AddDays(-7);
+            var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
 
+            // Fetch all data from the database for this deviceId
             var data = await _context.sensor_data
-                .Where(s => s.deviceId == deviceId && s.timestamp >= sevenDaysAgo)
-                .OrderByDescending(s => s.timestamp)
-                .Take(100)
-                .Select(s => new SensorDataDto
-                {
-                    id = s.id,
-                    sensor1_value = s.sensor1_value,
-                    sensor2_value = s.sensor2_value,
-                    deviceId = s.deviceId,
-                    solenoidValveStatus = s.solenoidValveStatus ? "On" : "Off",
-                    timestamp = s.timestamp,
-                    createdDateTime = s.createdDateTime,
-                })
+                .Where(s => s.deviceId == deviceId)
+                .Select(s => s.createdDateTime) // This is a string in your case
                 .ToListAsync();
 
-            if (!data.Any())
+            // Parse and filter data in-memory
+            var uniqueDates = data
+                .Select(dateString =>
+                {
+                    if (DateTime.TryParse(dateString, out var createdDateTime))
+                    {
+                        return createdDateTime.Date; // Extract only the date part
+                    }
+                    return default(DateTime);
+                })
+                .Where(date => date != default(DateTime) && date >= thirtyDaysAgo)
+                .Distinct()
+                .OrderByDescending(date => date)
+                .ToList();
+
+            if (!uniqueDates.Any())
             {
                 return NotFound();
             }
 
-            return Ok(data);
+            return Ok(uniqueDates);
         }
 
 
