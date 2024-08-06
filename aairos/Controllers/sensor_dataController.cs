@@ -164,7 +164,7 @@ namespace aairos.Controllers
             // Fetch all data from the database for this deviceId
             var data = await _context.sensor_data
                 .Where(s => s.deviceId == deviceId && s.solenoidValveStatus == true )
-                .Select(s => s.createdDateTime) // This is a string in your case
+                .Select(s => s.createdDateTime) 
                 .ToListAsync();
 
             // Parse and filter data in-memory
