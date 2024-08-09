@@ -8,6 +8,6 @@
         public int Threshold_1 { get; set; }
         public int Threshold_2 { get; set; }
         public string createdDateTime { get; set; }
-        public string updatedDateTime { get; set; }
+        public DateTime updatedDateTime { get; set; }
     }
 }

@@ -52,15 +52,24 @@ namespace aairos.Controllers
                 Threshold_1 = (sensorData.sensor1_value <= 1250 || sensorData.sensor1_value >= 4000) ? sensorData.sensor1_value : 0,
                 Threshold_2 = (sensorData.sensor2_value <= 1250 || sensorData.sensor2_value >= 4000) ? sensorData.sensor2_value : 0,
                 createdDateTime = sensorData.createdDateTime,
-                updatedDateTime = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")
+                updatedDateTime = DateTime.UtcNow // Assuming the property is of type DateTime
             };
 
-            // Save the threshold to the database
-            _context.Threshold.Add(threshold);
-            await _context.SaveChangesAsync();
+            try
+            {
+                // Save the threshold to the database
+                _context.Threshold.Add(threshold);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                // Log the error (you might want to use a logging framework)
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
 
             return CreatedAtAction(nameof(GetThresholdById), new { id = threshold.Id }, threshold);
         }
+
 
         // GET: api/Threshold/5
         [HttpGet("{id}")]
