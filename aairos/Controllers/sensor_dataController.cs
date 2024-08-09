@@ -318,35 +318,34 @@ namespace aairos.Controllers
         [HttpGet("device/{deviceId}/uniqueDatesLast30Days")]
         public async Task<ActionResult<IEnumerable<DateTime>>> GetUniqueCreatedDatesByDeviceIdLast30Days(int deviceId)
         {
-            var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
-
-            // Fetch all data from the database for this deviceId
-            var data = await _context.sensor_data
-                .Where(s => s.deviceId == deviceId && s.solenoidValveStatus == true)
-                .Select(s => s.createdDateTime)
-                .ToListAsync();
-
-            // Parse and filter data in-memory
-            var uniqueDates = data
-                .Select(dateString =>
-                {
-                    if (DateTime.TryParse(dateString, out var createdDateTime))
-                    {
-                        return createdDateTime.Date; // Extract only the date part
-                    }
-                    return default(DateTime);
-                })
-                .Where(date => date != default(DateTime) && date >= thirtyDaysAgo)
-                .Distinct()
-                .OrderByDescending(date => date)
-                .ToList();
-
-            if (!uniqueDates.Any())
+            try
             {
-                return NotFound();
-            }
+                var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
+                var data = await _context.sensor_data
+                    .Where(s => s.deviceId == deviceId && s.solenoidValveStatus == true)
+                    .Select(s => s.createdDateTime)
+                    .ToListAsync();
 
-            return Ok(uniqueDates);
+                var uniqueDates = data
+                    .Select(dateString => DateTime.TryParse(dateString, out var createdDateTime) ? createdDateTime.Date : default(DateTime))
+                    .Where(date => date != default(DateTime) && date >= thirtyDaysAgo)
+                    .Distinct()
+                    .OrderByDescending(date => date)
+                    .ToList();
+
+                if (!uniqueDates.Any())
+                {
+                    /*_logger.LogWarning("No unique dates found for deviceId: {deviceId}", deviceId);*/
+                    return NotFound();
+                }
+
+                return Ok(uniqueDates);
+            }
+            catch (Exception ex)
+            {
+                /*_logger.LogError(ex, "An error occurred while getting unique dates for deviceId: {deviceId}", deviceId);*/
+                return StatusCode(500, "Internal server error");
+            }
         }
 
         // GET: api/sensor_data/date/{date}/device/{deviceId}
