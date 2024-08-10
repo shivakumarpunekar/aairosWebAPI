@@ -341,7 +341,7 @@ namespace aairos.Controllers
 
                 return Ok(uniqueDates);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 /*_logger.LogError(ex, "An error occurred while getting unique dates for deviceId: {deviceId}", deviceId);*/
                 return StatusCode(500, "Internal server error");
