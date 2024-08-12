@@ -384,6 +384,7 @@ namespace aairos.Controllers
                     .Where(date => date != default(DateTime) && date >= thirtyDaysAgo)
                     .Distinct()
                     .OrderByDescending(date => date)
+                    .Select(date => date.ToString("yyyy-MM-dd")) // Format the date as yyyy-dd-MM
                     .ToList();
 
                 if (!uniqueDates.Any())
