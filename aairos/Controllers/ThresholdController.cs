@@ -27,7 +27,7 @@ namespace aairos.Controllers
         public async Task<ActionResult<IEnumerable<Threshold>>> GetAllThresholds()
         {
             var thresholds = await _context.Threshold
-                                           .OrderByDescending(t => t.createdDateTime)
+                                           .OrderByDescending(t => t.Id)
                                            .Take(100)
                                            .ToListAsync();
             return Ok(thresholds);
@@ -109,33 +109,56 @@ namespace aairos.Controllers
 
         // POST: api/Threshold/CreateSingle
         [HttpPost("CreateSingle")]
-        public async Task<IActionResult> CreateSingleThreshold(int profileId, int deviceId, int sensor1Value, int sensor2Value)
+        public async Task<IActionResult> CreateSingleThreshold(int profileId, int deviceId, int sensor1_value, int sensor2_value)
         {
-            // Fetch the most recent sensor data record based on deviceId
-            var sensorData = await _sensorDataContext.sensor_data
+            // Fetch the 10 most recent sensor data records
+            var sensorDataList = await _sensorDataContext.sensor_data
                 .Where(sd => sd.deviceId == deviceId)
                 .OrderByDescending(sd => sd.createdDateTime)
-                .FirstOrDefaultAsync();
+                .Take(10)
+                .ToListAsync();
 
-            if (sensorData == null)
+            if (sensorDataList == null || !sensorDataList.Any())
             {
                 return NotFound("No sensor data found for the specified device.");
             }
 
-            // Create a new threshold based on the provided sensor values
-            var threshold = new Threshold
+            var thresholds = new List<Threshold>();
+
+            // Filter and loop through each sensor data record to create a corresponding threshold
+            foreach (var sensorData in sensorDataList)
             {
-                profileId = profileId,
-                deviceId = deviceId,
-                Threshold_1 = sensor1Value, // Use the provided sensor value
-                Threshold_2 = sensor2Value, // Use the provided sensor value
-                createdDateTime = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"), // Adjust to match string format
-                updatedDateTime = DateTime.UtcNow
-            };
+                // Check if the provided sensor1_value and sensor2_value trigger the threshold logic
+                bool sensor1Trigger = (sensor1_value <= 1250 && sensorData.sensor1_value <= 1250) ||
+                                      (sensor1_value >= 4000 && sensorData.sensor1_value >= 4000);
+
+                bool sensor2Trigger = (sensor2_value <= 1250 && sensorData.sensor2_value <= 1250) ||
+                                      (sensor2_value >= 4000 && sensorData.sensor2_value >= 4000);
+
+                if (sensor1Trigger || sensor2Trigger)
+                {
+                    var threshold = new Threshold
+                    {
+                        profileId = profileId,
+                        deviceId = deviceId,
+                        Threshold_1 = sensor1Trigger ? sensorData.sensor1_value : 0,
+                        Threshold_2 = sensor2Trigger ? sensorData.sensor2_value : 0,
+                        createdDateTime = sensorData.createdDateTime,
+                        updatedDateTime = DateTime.UtcNow
+                    };
+                    thresholds.Add(threshold);
+                }
+            }
+
+            if (!thresholds.Any())
+            {
+                return BadRequest("No valid sensor data found matching the threshold criteria.");
+            }
 
             try
             {
-                _context.Threshold.Add(threshold);
+                // Save all thresholds to the database
+                _context.Threshold.AddRange(thresholds);
                 await _context.SaveChangesAsync();
             }
             catch (Exception ex)
@@ -143,8 +166,9 @@ namespace aairos.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
 
-            return CreatedAtAction(nameof(GetThresholdById), new { id = threshold.Id }, threshold);
+            return CreatedAtAction(nameof(GetAllThresholds), thresholds);
         }
+
 
     }
 }
