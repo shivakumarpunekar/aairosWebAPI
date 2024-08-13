@@ -21,9 +21,9 @@ namespace aairos.Controllers
             _configuration = configuration;
         }
 
-        // New method to get UserProfileId by LoginId
+        // New method to get userProfileId by LoginId
         [HttpGet("login/{loginId}")]
-        public async Task<IActionResult> GetUserProfileIdByLoginId(int loginId)
+        public async Task<IActionResult> GetuserProfileIdByLoginId(int loginId)
         {
             var user = await _context.Login.FindAsync(loginId);
 
@@ -33,8 +33,8 @@ namespace aairos.Controllers
 */                return NotFound("User not found");
             }
 
-/*            await _logger.LogAsync($"GET: api/Auth/login/{loginId} - UserProfileId: {user.UserProfileId}.");
-*/            return Ok(new { UserProfileId = user.UserProfileId });
+/*            await _logger.LogAsync($"GET: api/Auth/login/{loginId} - userProfileId: {user.userProfileId}.");
+*/            return Ok(new { userProfileId = user.userProfileId });
         }
 
         // This is a login fetch method by entering username and password

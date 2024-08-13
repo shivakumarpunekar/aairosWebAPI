@@ -27,11 +27,11 @@ namespace aairos.Migrations
 
             modelBuilder.Entity("aairos.Model.userprofile", b =>
                 {
-                    b.Property<int>("UserProfileId")
+                    b.Property<int>("userProfileId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("UserProfileId"));
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("userProfileId"));
 
                     b.Property<string>("City")
                         .IsRequired()
@@ -92,7 +92,7 @@ namespace aairos.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.HasKey("UserProfileId");
+                    b.HasKey("userProfileId");
 
                     b.ToTable("userprofile");
                 });

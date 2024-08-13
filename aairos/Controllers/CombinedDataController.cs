@@ -34,7 +34,7 @@ namespace aairos.Controllers
             var combinedData = deviceDetails.Select(detail =>
             {
                 var device = devices.FirstOrDefault(d => d.Id == detail.DeviceId);
-                var userProfile = userProfiles.FirstOrDefault(u => u.UserProfileId == detail.UserProfileId);
+                var userProfile = userProfiles.FirstOrDefault(u => u.userProfileId == detail.userProfileId);
 
                 return new CombinedDataViewModel
                 {
@@ -88,7 +88,7 @@ namespace aairos.Controllers
             var deviceDetail = new devicedetail
             {
                 DeviceId = device.Id,
-                UserProfileId = userProfile.UserProfileId,
+                userProfileId = userProfile.userProfileId,
                 Sensor_1 = inputData.Sensor_1,
                 Sensor_2 = inputData.Sensor_2,
                 ValveId = inputData.ValveId,

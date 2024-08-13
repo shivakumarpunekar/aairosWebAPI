@@ -40,7 +40,7 @@ namespace aairos.Controllers
             var userprofiles = await _context.UserProfile
                 .Select(up => new
                 {
-                    up.UserProfileId,
+                    up.userProfileId,
                     up.FirstName,
                     up.MiddleName,
                     up.LastName
@@ -120,7 +120,7 @@ namespace aairos.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> Putuserprofile(int id, userprofile userprofile)
         {
-            if (id != userprofile.UserProfileId)
+            if (id != userprofile.userProfileId)
             {
 /*                await _logger.LogAsync($"PUT: api/userprofiles/{id} returned BadRequest due to mismatched IDs.");
 */                return BadRequest();
@@ -192,8 +192,8 @@ namespace aairos.Controllers
             _context.UserProfile.Add(userprofile);
             await _context.SaveChangesAsync();
 
-/*            await _logger.LogAsync($"POST: api/userprofiles created a new user profile with ID {userprofile.UserProfileId}.");
-*/            return CreatedAtAction(nameof(Getuserprofile), new { id = userprofile.UserProfileId }, userprofile);
+/*            await _logger.LogAsync($"POST: api/userprofiles created a new user profile with ID {userprofile.userProfileId}.");
+*/            return CreatedAtAction(nameof(Getuserprofile), new { id = userprofile.userProfileId }, userprofile);
         }
 
         // DELETE: api/userprofiles/5
@@ -216,7 +216,7 @@ namespace aairos.Controllers
 
         private bool userprofileExists(int id)
         {
-            return _context.UserProfile.Any(e => e.UserProfileId == id);
+            return _context.UserProfile.Any(e => e.userProfileId == id);
         }
     }
 }

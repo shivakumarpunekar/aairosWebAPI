@@ -35,7 +35,7 @@ namespace aairos.Controllers
 
         // POST: api/Threshold
         [HttpPost]
-        public async Task<IActionResult> CreateThresholds(int profileId, int deviceId)
+        public async Task<IActionResult> CreateThresholds(int userProfileId, int deviceId)
         {
             // Fetch the 100 most recent sensor data records
             var sensorDataList = await _sensorDataContext.sensor_data
@@ -60,7 +60,7 @@ namespace aairos.Controllers
                 {
                     var threshold = new Threshold
                     {
-                        profileId = profileId,
+                        userProfileId = userProfileId,
                         deviceId = deviceId,
                         Threshold_1 = (sensorData.sensor1_value <= 1250 || sensorData.sensor1_value >= 4000) ? sensorData.sensor1_value : 0,
                         Threshold_2 = (sensorData.sensor2_value <= 1250 || sensorData.sensor2_value >= 4000) ? sensorData.sensor2_value : 0,
@@ -109,7 +109,7 @@ namespace aairos.Controllers
 
         // POST: api/Threshold/CreateSingle
         [HttpPost("CreateSingle")]
-        public async Task<IActionResult> CreateSingleThreshold(int profileId, int deviceId, int sensor1_value, int sensor2_value)
+        public async Task<IActionResult> CreateSingleThreshold(int userProfileId, int deviceId, int sensor1_value, int sensor2_value)
         {
             // Fetch the 10 most recent sensor data records
             var sensorDataList = await _sensorDataContext.sensor_data
@@ -139,7 +139,7 @@ namespace aairos.Controllers
                 {
                     var threshold = new Threshold
                     {
-                        profileId = profileId,
+                        userProfileId = userProfileId,
                         deviceId = deviceId,
                         Threshold_1 = sensor1Trigger ? sensorData.sensor1_value : 0,
                         Threshold_2 = sensor2Trigger ? sensorData.sensor2_value : 0,

@@ -8,7 +8,7 @@ namespace aairos.Model
         // Foreign key
         public int Id { get; set; }
         public int LoginId { get; set; }
-        public int UserProfileId { get; set; }
+        public int userProfileId { get; set; }
         public string GuId { get; set; }
         public int DeviceId { get; set; }
         public int Sensor_1 { get; set; }

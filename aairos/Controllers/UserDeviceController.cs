@@ -32,7 +32,7 @@ namespace aairos.Controllers
             var userDeviceDtos = userDevices.Select(ud => new UserDeviceDto
             {
                 userDeviceId = ud.userDeviceId,
-                profileId = ud.profileId,
+                userProfileId = ud.userProfileId,
                 deviceId = ud.deviceId,
                 deviceStatus = ud.deviceStatus ? "Active" : "InActive",
                 createdDate = ud.createdDate,
@@ -59,7 +59,7 @@ namespace aairos.Controllers
             var userDeviceDto = new UserDeviceDto
             {
                 userDeviceId = userDevice.userDeviceId,
-                profileId = userDevice.profileId,
+                userProfileId = userDevice.userProfileId,
                 deviceId = userDevice.deviceId,
                 deviceStatus = userDevice.deviceStatus ? "Active" : "InActive",
                 createdDate = userDevice.createdDate,
@@ -70,12 +70,12 @@ namespace aairos.Controllers
         }
 
 
-        // GET api/<userdevicesController>/byProfile/{profileId}
-        [HttpGet("byProfile/{profileId}")]
-        public async Task<ActionResult<IEnumerable<UserDeviceDto>>> GetUserDevicesByProfile(int profileId)
+        // GET api/<userdevicesController>/byProfile/{userProfileId}
+        [HttpGet("byProfile/{userProfileId}")]
+        public async Task<ActionResult<IEnumerable<UserDeviceDto>>> GetUserDevicesByProfile(int userProfileId)
         {
             var userDevices = await _userdeviceContext.UserDevice
-                .Where(ud => ud.profileId == profileId)
+                .Where(ud => ud.userProfileId == userProfileId)
                 .ToListAsync();
 
             if (userDevices == null || userDevices.Count == 0)
@@ -86,7 +86,7 @@ namespace aairos.Controllers
             var userDeviceDtos = userDevices.Select(ud => new UserDeviceDto
             {
                 userDeviceId = ud.userDeviceId,
-                profileId = ud.profileId,
+                userProfileId = ud.userProfileId,
                 deviceId = ud.deviceId,
                 deviceStatus = ud.deviceStatus ? "Active" : "InActive",
                 createdDate = ud.createdDate,
@@ -105,7 +105,7 @@ namespace aairos.Controllers
         {
             // Check if the user already has the device
             var existingUserDevice = await _userdeviceContext.UserDevice
-                .FirstOrDefaultAsync(ud => ud.profileId == userDeviceDto.profileId && ud.deviceId == userDeviceDto.deviceId);
+                .FirstOrDefaultAsync(ud => ud.userProfileId == userDeviceDto.userProfileId && ud.deviceId == userDeviceDto.deviceId);
 
             if (existingUserDevice != null)
             {
@@ -114,7 +114,7 @@ namespace aairos.Controllers
 
             var userDevice = new UserDevice
             {
-                profileId = userDeviceDto.profileId,
+                userProfileId = userDeviceDto.userProfileId,
                 deviceId = userDeviceDto.deviceId,
                 deviceStatus = userDeviceDto.deviceStatus == "Active",
                 createdDate = DateTime.UtcNow,

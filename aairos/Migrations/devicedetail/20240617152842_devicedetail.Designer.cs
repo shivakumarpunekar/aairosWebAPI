@@ -42,7 +42,7 @@ namespace aairos.Migrations.devicedetail
                     b.Property<int>("SensorId")
                         .HasColumnType("int");
 
-                    b.Property<int>("UserProfileId")
+                    b.Property<int>("userProfileId")
                         .HasColumnType("int");
 
                     b.Property<int>("ValveId")

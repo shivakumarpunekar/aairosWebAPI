@@ -80,13 +80,13 @@ namespace aairos.Controllers
 
 
 
-        // GET: api/sensor_data/profile/{profileId}/device/{deviceId}
-        [HttpGet("profile/{profileId}/device/{deviceId}")]
-        public async Task<ActionResult<IEnumerable<SensorDataDto>>> GetSensorDataByProfileIdAndDeviceId(int profileId, int deviceId)
+        // GET: api/sensor_data/profile/{userProfileId}/device/{deviceId}
+        [HttpGet("profile/{userProfileId}/device/{deviceId}")]
+        public async Task<ActionResult<IEnumerable<SensorDataDto>>> GetSensorDataByuserProfileIdAndDeviceId(int userProfileId, int deviceId)
         {
             var data = await (from sd in _context.sensor_data
                               join ud in _context.UserDevice on sd.deviceId equals ud.deviceId
-                              where ud.profileId == profileId && sd.deviceId == deviceId
+                              where ud.userProfileId == userProfileId && sd.deviceId == deviceId
                               orderby sd.timestamp descending
                               select new SensorDataDto
                               {
@@ -314,12 +314,12 @@ namespace aairos.Controllers
 
 
         [HttpGet("export")]
-        public async Task<IActionResult> ExportToExcel([FromQuery] int profileId, [FromQuery] int deviceId, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        public async Task<IActionResult> ExportToExcel([FromQuery] int userProfileId, [FromQuery] int deviceId, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
             var sensorData = await (from sd in _context.sensor_data
                                     join ud in _context.UserDevice on sd.deviceId equals ud.deviceId
-                                    join up in _context.UserProfile on ud.profileId equals up.UserProfileId
-                                    where ud.profileId == profileId && sd.deviceId == deviceId
+                                    join up in _context.UserProfile on ud.userProfileId equals up.userProfileId
+                                    where ud.userProfileId == userProfileId && sd.deviceId == deviceId
                                     && sd.timestamp >= startDate && sd.timestamp <= endDate
                                     select new
                                     {
@@ -384,7 +384,7 @@ namespace aairos.Controllers
                     .Where(date => date != default(DateTime) && date >= thirtyDaysAgo)
                     .Distinct()
                     .OrderByDescending(date => date)
-                    .Select(date => date.ToString("yyyy-MM-dd")) // Format the date as yyyy-dd-MM
+                    .Select(date => date.ToString("yyyy-dd-MM")) // Format the date as yyyy-dd-MM
                     .ToList();
 
                 if (!uniqueDates.Any())
@@ -404,15 +404,20 @@ namespace aairos.Controllers
 
         // GET: api/sensor_data/date/{date}/device/{deviceId}
         [HttpGet("date/{date}/device/{deviceId}")]
-        public async Task<ActionResult<IEnumerable<SensorDataDto>>> GetSensorDataByDate1(DateTime date, int deviceId)
+        public async Task<ActionResult<IEnumerable<SensorDataDto>>> GetSensorDataByDate1(string date, int deviceId)
         {
-            // Calculate the start and end of the day based on the provided date
-            var startOfDay = date.Date;
+            if (!DateTime.TryParseExact(date, "yyyy-dd-MM", null, System.Globalization.DateTimeStyles.None, out var parsedDate))
+            {
+                return BadRequest("Invalid date format. Please use yyyy-dd-MM format.");
+            }
+
+            // Calculate the start and end of the day based on the parsed date
+            var startOfDay = parsedDate.Date;
             var endOfDay = startOfDay.AddDays(1).AddTicks(-1);
 
             // Fetch all data for the provided deviceId and filter by solenoidValveStatus
             var allData = await _context.sensor_data
-                .Where(s => s.deviceId == deviceId && s.solenoidValveStatus == true) // Filter by deviceId and solenoidValveStatus
+                .Where(s => s.deviceId == deviceId && s.solenoidValveStatus == true) 
                 .ToListAsync();
 
             var data = allData
@@ -438,6 +443,7 @@ namespace aairos.Controllers
 
             return Ok(data);
         }
+
 
         private bool SensorDataExists(int id)
         {

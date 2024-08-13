@@ -25,7 +25,7 @@ namespace aairos.Migrations.devicedetail
                     DeviceId = table.Column<int>(type: "int", nullable: false),
                     SensorId = table.Column<int>(type: "int", nullable: false),
                     ValveId = table.Column<int>(type: "int", nullable: false),
-                    UserProfileId = table.Column<int>(type: "int", nullable: false),
+                    userProfileId = table.Column<int>(type: "int", nullable: false),
                     ValveStatus = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>

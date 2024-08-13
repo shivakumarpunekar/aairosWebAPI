@@ -2,7 +2,7 @@
 {
     public class userprofile
     {
-        public int UserProfileId { get; set; }
+        public int userProfileId { get; set; }
         public string? GuId { get; set; }
         public string? FirstName { get; set; }
         public string? MiddleName { get; set; }

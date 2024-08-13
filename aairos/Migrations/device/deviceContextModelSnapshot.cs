@@ -43,7 +43,7 @@ namespace aairos.Migrations.device
                     b.Property<DateTime>("UpdatedDate")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<int>("UserProfileId")
+                    b.Property<int>("userProfileId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");

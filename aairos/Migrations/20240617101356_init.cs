@@ -19,7 +19,7 @@ namespace aairos.Migrations
                 name: "userprofile",
                 columns: table => new
                 {
-                    UserProfileId = table.Column<int>(type: "int", nullable: false)
+                    userProfileId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     GuId = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
@@ -51,7 +51,7 @@ namespace aairos.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_userprofile", x => x.UserProfileId);
+                    table.PrimaryKey("PK_userprofile", x => x.userProfileId);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
         }
