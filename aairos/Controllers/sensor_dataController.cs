@@ -369,60 +369,62 @@ namespace aairos.Controllers
         //This is based on date for 30 days
         // GET: api/uniqueDatesLast30Days
         [HttpGet("device/{deviceId}/uniqueDatesLast30Days")]
-        public async Task<ActionResult<IEnumerable<DateTime>>> GetUniqueCreatedDatesByDeviceIdLast30Days1(int deviceId)
+        public async Task<ActionResult<IEnumerable<string>>> GetUniqueCreatedDatesByDeviceIdLast30Days(int deviceId)
         {
             try
             {
                 var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
                 var data = await _context.sensor_data
                     .Where(s => s.deviceId == deviceId && s.solenoidValveStatus == true)
-                    .Select(s => s.createdDateTime)
+                    .Select(s => s.createdDateTime.Distinct())
                     .ToListAsync();
 
-                var uniqueDates = data
+                /*var uniqueDates = data
                     .Select(dateString => DateTime.TryParse(dateString, out var createdDateTime) ? createdDateTime.Date : default(DateTime))
                     .Where(date => date != default(DateTime) && date >= thirtyDaysAgo)
                     .Distinct()
                     .OrderByDescending(date => date)
-                    .Select(date => date.ToString("yyyy-dd-MM")) // Format the date as yyyy-dd-MM
-                    .ToList();
+                    *//*.Select(date => date.ToString("yyyy-MM-dd")) // Format the date as yyyy-MM-dd*//*
+                    .Select(date => date.ToString("dd-MM-yyyy"))
+                    .ToList();*/
 
-                if (!uniqueDates.Any())
+                if (!data.Any())
                 {
-                    /*_logger.LogWarning("No unique dates found for deviceId: {deviceId}", deviceId);*/
                     return NotFound();
                 }
 
-                return Ok(uniqueDates);
+                return Ok(data);
             }
             catch (Exception)
             {
-                /*_logger.LogError(ex, "An error occurred while getting unique dates for deviceId: {deviceId}", deviceId);*/
                 return StatusCode(500, "Internal server error");
             }
         }
 
+
         // GET: api/sensor_data/date/{date}/device/{deviceId}
         [HttpGet("date/{date}/device/{deviceId}")]
-        public async Task<ActionResult<IEnumerable<SensorDataDto>>> GetSensorDataByDate1(string date, int deviceId)
+        public async Task<ActionResult<IEnumerable<SensorDataDto>>> GetSensorDataByDate(string date, int deviceId)
         {
-            if (!DateTime.TryParseExact(date, "yyyy-dd-MM", null, System.Globalization.DateTimeStyles.None, out var parsedDate))
+            if (!DateTime.TryParseExact(date, "dd-MM-yyyy", null, System.Globalization.DateTimeStyles.None, out var parsedDate))
             {
-                return BadRequest("Invalid date format. Please use yyyy-dd-MM format.");
+                return BadRequest("Invalid date format. Please use dd-MM-yyyy format.");
             }
 
-            // Calculate the start and end of the day based on the parsed date
             var startOfDay = parsedDate.Date;
             var endOfDay = startOfDay.AddDays(1).AddTicks(-1);
 
-            // Fetch all data for the provided deviceId and filter by solenoidValveStatus
             var allData = await _context.sensor_data
-                .Where(s => s.deviceId == deviceId && s.solenoidValveStatus == true) 
+                .Where(s => s.deviceId == deviceId && s.solenoidValveStatus == true)
                 .ToListAsync();
 
             var data = allData
-                .Where(s => DateTime.TryParse(s.createdDateTime, out var createdDateTime) &&
-                            createdDateTime >= startOfDay && createdDateTime <= endOfDay)
+                .Where(s =>
+                {
+                    DateTime createdDateTime;
+                    return DateTime.TryParse(s.createdDateTime, out createdDateTime) &&
+                           createdDateTime >= startOfDay && createdDateTime <= endOfDay;
+                })
                 .OrderByDescending(s => s.timestamp)
                 .Select(s => new SensorDataDto
                 {
@@ -443,6 +445,8 @@ namespace aairos.Controllers
 
             return Ok(data);
         }
+
+
 
 
         private bool SensorDataExists(int id)
