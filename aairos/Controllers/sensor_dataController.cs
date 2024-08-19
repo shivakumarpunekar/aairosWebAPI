@@ -376,24 +376,24 @@ namespace aairos.Controllers
                 var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
                 var data = await _context.sensor_data
                     .Where(s => s.deviceId == deviceId && s.solenoidValveStatus == true)
-                    .Select(s => s.createdDateTime.Distinct())
+                    .Select(s => s.createdDateTime)
                     .ToListAsync();
 
-                /*var uniqueDates = data
+                var uniqueDates = data
                     .Select(dateString => DateTime.TryParse(dateString, out var createdDateTime) ? createdDateTime.Date : default(DateTime))
                     .Where(date => date != default(DateTime) && date >= thirtyDaysAgo)
                     .Distinct()
                     .OrderByDescending(date => date)
-                    *//*.Select(date => date.ToString("yyyy-MM-dd")) // Format the date as yyyy-MM-dd*//*
-                    .Select(date => date.ToString("dd-MM-yyyy"))
-                    .ToList();*/
+                    .Select(date => date.ToString("yyyy-MM-dd")) // Format the date as yyyy-MM-dd
+                    /*.Select(date => date.ToString("dd-MM-yyyy"))*/
+                    .ToList();
 
-                if (!data.Any())
+                if (!uniqueDates.Any())
                 {
                     return NotFound();
                 }
 
-                return Ok(data);
+                return Ok(uniqueDates);
             }
             catch (Exception)
             {
@@ -406,9 +406,9 @@ namespace aairos.Controllers
         [HttpGet("date/{date}/device/{deviceId}")]
         public async Task<ActionResult<IEnumerable<SensorDataDto>>> GetSensorDataByDate(string date, int deviceId)
         {
-            if (!DateTime.TryParseExact(date, "dd-MM-yyyy", null, System.Globalization.DateTimeStyles.None, out var parsedDate))
+            if (!DateTime.TryParseExact(date, "yyyy-MM-dd", null, System.Globalization.DateTimeStyles.None, out var parsedDate))
             {
-                return BadRequest("Invalid date format. Please use dd-MM-yyyy format.");
+                return BadRequest("Invalid date format. Please use yyyy-MM-dd format.");
             }
 
             var startOfDay = parsedDate.Date;

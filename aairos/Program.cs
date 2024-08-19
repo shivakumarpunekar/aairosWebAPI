@@ -42,6 +42,11 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+// This is for ValveStatusContext connection
+builder.Services.AddDbContext<ValveStatusContext>(options =>
+    options.UseMySql(builder.Configuration.GetConnectionString("Defaltconnection"),
+    new MySqlServerVersion(new Version(8, 0, 21))));
+
 // This is for ThresholdContext connection
 builder.Services.AddDbContext<ThresholdContext>(options =>
     options.UseMySql(builder.Configuration.GetConnectionString("Defaltconnection"),
