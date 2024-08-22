@@ -163,14 +163,31 @@ namespace aairos.Controllers
                 .Where(v => v.deviceId == deviceId)
                 .ToListAsync();
 
+            // If no valve statuses found, insert a new record
             if (valveStatuses == null || valveStatuses.Count == 0)
             {
-                return NotFound("No valve status found for the given deviceId.");
+                // Create a new ValveStatus entry
+                var newValveStatus = new ValveStatus
+                {
+                    deviceId = deviceId,
+                    ValveStatusOnOrOff = 0, // Default value, you can change this as needed
+                    CreatedDate = DateTime.UtcNow,
+                    UpdatedDate = DateTime.UtcNow,
+                    // Add other necessary properties like userProfileId if needed
+                };
+
+                // Add the new entry to the database
+                _context.ValveStatus.Add(newValveStatus);
+                await _context.SaveChangesAsync();
+
+                // Fetch the newly inserted entry to return
+                valveStatuses = new List<ValveStatus> { newValveStatus };
             }
 
             // Return the valve statuses
             return Ok(valveStatuses);
         }
+
 
 
         // PUT: api/ValveStatus/device/{deviceId}
