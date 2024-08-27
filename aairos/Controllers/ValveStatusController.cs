@@ -200,7 +200,7 @@ namespace aairos.Controllers
 
             // Check if the user is an admin
             var loginUser = await _context.Login
-                .FirstOrDefaultAsync(l => l.LoginId == loginId); // Assuming loginId should be used here instead of hardcoding 21
+                .FirstOrDefaultAsync(l => l.LoginId == 21); // Assuming loginId should be used here instead of hardcoding 21
 
             if (loginUser == null)
             {
