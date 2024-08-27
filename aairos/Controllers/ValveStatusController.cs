@@ -2,7 +2,9 @@
 using aairos.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace aairos.Controllers
@@ -26,7 +28,7 @@ namespace aairos.Controllers
         }
 
         // GET: api/ValveStatus/{userProfileId}/{deviceId}
-        [HttpGet("{userProfileId}/{deviceId}")]
+        /*[HttpGet("{userProfileId}/{deviceId}")]
         public async Task<ActionResult<ValveStatus>> GetValveStatusByProfileAndDevice(int userProfileId, int deviceId)
         {
             // Find the valve status by userProfileId and deviceId
@@ -40,73 +42,6 @@ namespace aairos.Controllers
 
             // Return the valve status
             return Ok(valveStatus);
-        }
-
-
-        // POST: api/ValveStatus
-        [HttpPost]
-        public async Task<ActionResult<ValveStatus>> PostValveStatus(ValveStatus valveStatus)
-        {
-            // Ensure ValveStatusOnOrOff is either 0 or 1
-            if (valveStatus.ValveStatusOnOrOff != 0 && valveStatus.ValveStatusOnOrOff != 1)
-            {
-                return BadRequest("ValveStatusOnOrOff must be 0 or 1.");
-            }
-
-            // Set CreatedDate for new entries
-            valveStatus.CreatedDate = DateTime.UtcNow;
-            valveStatus.UpdatedDate = DateTime.UtcNow;
-
-            _context.ValveStatus.Add(valveStatus);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetValveStatus), new { id = valveStatus.ValveStatusId }, valveStatus);
-        }
-
-        // PUT: api/ValveStatus/{id}
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutValveStatus(int id, ValveStatus valveStatus)
-        {
-            if (id != valveStatus.ValveStatusId)
-            {
-                return BadRequest("ValveStatusId does not match.");
-            }
-
-            // Ensure ValveStatusOnOrOff is either 0 or 1
-            if (valveStatus.ValveStatusOnOrOff != 0 && valveStatus.ValveStatusOnOrOff != 1)
-            {
-                return BadRequest("ValveStatusOnOrOff must be 0 or 1.");
-            }
-
-            var existingStatus = await _context.ValveStatus.FindAsync(id);
-            if (existingStatus == null)
-            {
-                return NotFound();
-            }
-
-            // Update only the specified fields
-            existingStatus.ValveStatusOnOrOff = valveStatus.ValveStatusOnOrOff;
-            existingStatus.UpdatedDate = DateTime.UtcNow;
-
-            _context.Entry(existingStatus).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ValveStatusExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
         }
 
         // PUT: api/ValveStatus/{userProfileId}/{deviceId}
@@ -151,7 +86,7 @@ namespace aairos.Controllers
             }
 
             return NoContent();
-        }
+        }*/
 
 
         // GET: api/ValveStatus/device/{deviceId}
@@ -232,6 +167,118 @@ namespace aairos.Controllers
             }
 
             return NoContent();
+        }
+
+
+
+        // GET: api/ValveStatus/admin/device/{deviceId}
+        [HttpGet("admin/device/{deviceId}")]
+        public async Task<ActionResult<ValveStatus>> GetAdminValveStatusByDevice(int deviceId)
+        {
+            // Find the valve status by deviceId
+            var valveStatus = await _context.ValveStatus
+                .FirstOrDefaultAsync(v => v.deviceId == deviceId);
+
+            if (valveStatus == null)
+            {
+                return NotFound("No matching valve status found for the given deviceId.");
+            }
+
+            // Return only the AdminValveStatus
+            return Ok(new { valveStatus.AdminValveStatus });
+        }
+
+        // PUT: api/ValveStatus/admin/device/{deviceId}
+        [HttpPut("admin/device/{deviceId}")]
+        public async Task<IActionResult> PutAdminValveStatusByDevice(int deviceId, ValveStatus valveStatus, [FromQuery] int loginId)
+        {
+            // Ensure AdminValveStatus is either 0 or 1
+            if (valveStatus.AdminValveStatus != 0 && valveStatus.AdminValveStatus != 1)
+            {
+                return BadRequest("AdminValveStatus must be 0 or 1.");
+            }
+
+            // Check if the user is an admin
+            var loginUser = await _context.Login
+                .FirstOrDefaultAsync(l => l.LoginId == 21);
+
+            if (loginUser == null)
+            {
+                return NotFound("Login not found.");
+            }
+
+            if (!loginUser.IsAdmin)
+            {
+                return Unauthorized("User is not authorized to perform this action.");
+            }
+
+            // Find the existing status by deviceId
+            var existingStatus = await _context.ValveStatus
+                .FirstOrDefaultAsync(v => v.deviceId == deviceId);
+
+            if (existingStatus == null)
+            {
+                return NotFound("No matching valve status found for the given deviceId.");
+            }
+
+            // Update only the AdminValveStatus
+            existingStatus.AdminValveStatus = valveStatus.AdminValveStatus;
+            existingStatus.UpdatedDate = DateTime.UtcNow;
+
+            _context.Entry(existingStatus).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ValveStatusExists(existingStatus.ValveStatusId))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+
+        // GET: api/ValveStatus/user/device/{deviceId}
+        [HttpGet("user/device/{deviceId}")]
+        public async Task<ActionResult<object>> GetUserValveStatusByDevice(int deviceId)
+        {
+            // Find the valve status by deviceId
+            var valveStatus = await _context.ValveStatus
+                .FirstOrDefaultAsync(v => v.deviceId == deviceId);
+
+            if (valveStatus == null)
+            {
+                return NotFound("No matching valve status found for the given deviceId");
+            }
+
+            // Determine the status based on ValveStatusOnOrOff value
+            string status;
+            switch (valveStatus.ValveStatusOnOrOff)
+            {
+                case 2:
+                    status = "Undecided";
+                    break;
+                case 1:
+                    status = "On";
+                    break;
+                case 0:
+                    status = "Off";
+                    break;
+                default:
+                    status = "Unknown"; // Optional: handle unexpected values
+                    break;
+            }
+
+            return Ok(new { Status = status });
         }
 
 

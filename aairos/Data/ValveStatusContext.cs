@@ -10,5 +10,8 @@ namespace aairos.Data
         }
 
         public DbSet<aairos.Model.ValveStatus> ValveStatus { get; set; }
+
+        public DbSet<aairos.Model.Login> Login { get; set; }
+
     }
 }
