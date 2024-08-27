@@ -192,15 +192,15 @@ namespace aairos.Controllers
         [HttpPut("admin/device/{deviceId}")]
         public async Task<IActionResult> PutAdminValveStatusByDevice(int deviceId, ValveStatus valveStatus, [FromQuery] int loginId)
         {
-            // Ensure AdminValveStatus is either 0 or 1
-            if (valveStatus.AdminValveStatus != 0 && valveStatus.AdminValveStatus != 1)
+            // Ensure AdminValveStatus is either 0, 1, or 2
+            if (valveStatus.AdminValveStatus < 0 || valveStatus.AdminValveStatus > 2)
             {
-                return BadRequest("AdminValveStatus must be 0 or 1.");
+                return BadRequest("AdminValveStatus must be 0, 1, or 2.");
             }
 
             // Check if the user is an admin
             var loginUser = await _context.Login
-                .FirstOrDefaultAsync(l => l.LoginId == 21);
+                .FirstOrDefaultAsync(l => l.LoginId == loginId); // Assuming loginId should be used here instead of hardcoding 21
 
             if (loginUser == null)
             {
@@ -221,7 +221,7 @@ namespace aairos.Controllers
                 return NotFound("No matching valve status found for the given deviceId.");
             }
 
-            // Update only the AdminValveStatus
+            // Update the AdminValveStatus and UpdatedDate
             existingStatus.AdminValveStatus = valveStatus.AdminValveStatus;
             existingStatus.UpdatedDate = DateTime.UtcNow;
 
@@ -247,7 +247,8 @@ namespace aairos.Controllers
         }
 
 
-        // GET: api/ValveStatus/user/device/{deviceId}
+
+        /*// GET: api/ValveStatus/user/device/{deviceId}
         [HttpGet("user/device/{deviceId}")]
         public async Task<ActionResult<object>> GetUserValveStatusByDevice(int deviceId)
         {
@@ -279,7 +280,7 @@ namespace aairos.Controllers
             }
 
             return Ok(new { Status = status });
-        }
+        }*/
 
 
 
