@@ -126,6 +126,10 @@ namespace aairos
             services.AddDbContext<ValveStatusContext>(options =>
                 options.UseMySql(Configuration.GetConnectionString("Defaltconnection"),
                 new MySqlServerVersion(new Version(8, 0, 21))));
+
+            services.AddDbContext<relay_durationsContext>(options =>
+                options.UseMySql(Configuration.GetConnectionString("Defaltconnection"),
+                new MySqlServerVersion(new Version(8, 0, 21))));
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
