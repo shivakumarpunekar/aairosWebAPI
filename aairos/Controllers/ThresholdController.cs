@@ -42,7 +42,19 @@ namespace aairos.Controllers
 
             return Ok(threshold);
         }
+        // GET: api/Threshold/device/{deviceId} (Fetch by Device ID)
+        [HttpGet("device/{deviceId}")]
+        public async Task<ActionResult<Threshold>> GetThresholdByDeviceId(int deviceId)
+        {
+            var threshold = await _context.Threshold.FirstOrDefaultAsync(t => t.deviceId == deviceId);
 
+            if (threshold == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(threshold);
+        }
         // POST: api/Threshold/CreateSingle
         [HttpPost("CreateSingle")]
         public async Task<IActionResult> CreateSingleThreshold(int userProfileId, int deviceId, int Threshold_1, int Threshold_2)
