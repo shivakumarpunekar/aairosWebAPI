@@ -28,21 +28,29 @@ namespace aairos.Controllers
             return Ok(relay_durations);
         }
 
-        // GET: api/relay_durations/Device/{user_id}
         [HttpGet("Device/{user_id}")]
         public async Task<ActionResult<IEnumerable<relay_durations>>> GetDeviceId(int user_id)
         {
-            var relay_durations = await _context.relay_durations
-                                                .Where(r => r.user_id == user_id)
-                                                .OrderByDescending(r => r.timestamp)
-                                                .ToListAsync();
+            var query = @"
+                        SELECT *, 
+                               CONVERT_TZ(timestamp, '+00:00', '+05:30') AS last_updated
+                        FROM relay_durations
+                        WHERE user_id = @p0
+                        ORDER BY last_updated DESC
+                        LIMIT 0, 500;";
 
-            if (relay_durations == null || !relay_durations.Any())
+            var relayDurations = await _context.relay_durations
+                .FromSqlRaw(query, user_id)
+                .ToListAsync();
+
+            if (relayDurations == null || !relayDurations.Any())
             {
                 return NotFound();
             }
 
-            return Ok(relay_durations);
+            // Return the results mapped to the DTO
+            return Ok(relayDurations);
         }
+
     }
 }
