@@ -368,7 +368,7 @@ namespace aairos.Controllers
 
         //This is based on date for 30 days
         // GET: api/uniqueDatesLast30Days
-        [HttpGet("device/{deviceId}/uniqueDatesLast30Days")]
+        /*[HttpGet("device/{deviceId}/uniqueDatesLast30Days")]
         public async Task<ActionResult<IEnumerable<string>>> GetUniqueCreatedDatesByDeviceIdLast30Days(int deviceId)
         {
             try
@@ -385,7 +385,7 @@ namespace aairos.Controllers
                     .Distinct()
                     .OrderByDescending(date => date)
                     .Select(date => date.ToString("yyyy-MM-dd")) // Format the date as yyyy-MM-dd
-                    /*.Select(date => date.ToString("dd-MM-yyyy"))*/
+                    *//*.Select(date => date.ToString("dd-MM-yyyy"))*//*
                     .ToList();
 
                 if (!uniqueDates.Any())
@@ -399,7 +399,45 @@ namespace aairos.Controllers
             {
                 return StatusCode(500, "Internal server error");
             }
+        }*/
+
+        [HttpGet("device/{deviceId}/uniqueDatesLast30Days")]
+        public async Task<ActionResult<IEnumerable<string>>> GetUniqueCreatedDatesByDeviceIdLast30Days(int deviceId)
+        {
+            try
+            {
+                var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
+                var data = await _context.sensor_data
+                    .Where(s => s.deviceId == deviceId && s.solenoidValveStatus == true)
+                    .Select(s => s.createdDateTime)
+                    .ToListAsync();
+
+                var uniqueDates = data
+                    .Select(dateString => DateTime.TryParse(dateString, out var createdDateTime) ? createdDateTime.Date : default(DateTime?))
+                    .Where(date => date != null && date >= thirtyDaysAgo)
+                    .Distinct()
+                    .OrderByDescending(date => date)
+                    .Select(date => date.Value.ToString("yyyy-MM-dd"))  // Format the date
+                    .ToList();
+
+                if (!uniqueDates.Any())
+                {
+                    return NotFound();
+                }
+
+                return Ok(uniqueDates);
+            }
+            catch (Exception ex)
+            {
+                // Log exception
+                Console.WriteLine(ex.Message);
+                return StatusCode(500, "Internal server error");
+            }
         }
+
+
+
+
 
 
         // GET: api/sensor_data/date/{date}/device/{deviceId}
@@ -414,17 +452,13 @@ namespace aairos.Controllers
             var startOfDay = parsedDate.Date;
             var endOfDay = startOfDay.AddDays(1).AddTicks(-1);
 
-            var allData = await _context.sensor_data
+            var data = await _context.sensor_data
                 .Where(s => s.deviceId == deviceId && s.solenoidValveStatus == true)
                 .ToListAsync();
 
-            var data = allData
-                .Where(s =>
-                {
-                    DateTime createdDateTime;
-                    return DateTime.TryParse(s.createdDateTime, out createdDateTime) &&
-                           createdDateTime >= startOfDay && createdDateTime <= endOfDay;
-                })
+            var filteredData = data
+                .Where(s => DateTime.TryParse(s.createdDateTime, out var createdDateTime)
+                            && createdDateTime >= startOfDay && createdDateTime <= endOfDay)
                 .OrderByDescending(s => s.timestamp)
                 .Select(s => new SensorDataDto
                 {
@@ -438,13 +472,14 @@ namespace aairos.Controllers
                 })
                 .ToList();
 
-            if (!data.Any())
+            if (!filteredData.Any())
             {
                 return NotFound();
             }
 
-            return Ok(data);
+            return Ok(filteredData);
         }
+
 
 
 

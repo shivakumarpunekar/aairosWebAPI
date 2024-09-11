@@ -7,6 +7,5 @@
         public string state { get; set; }
         public int duration { get; set; }
         public DateTime timestamp { get; set; }
-        public DateTime last_updated { get; set; }
     }
 }

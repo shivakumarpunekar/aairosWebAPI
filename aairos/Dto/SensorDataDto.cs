@@ -8,6 +8,6 @@
             public int deviceId { get; set; }
             public string? solenoidValveStatus { get; set; }
             public DateTime timestamp { get; set; }
-            public string createdDateTime { get; set; }
+            public string? createdDateTime { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using aairos.Dto;
+using Microsoft.EntityFrameworkCore;
 
 namespace aairos.Data
 {
@@ -10,5 +11,6 @@ namespace aairos.Data
         }
 
         public DbSet<aairos.Model.relay_durations> relay_durations { get; set; }
+        public DbSet<aairos.Dto.StateDurationDTO> StateDurationDTO { get; set; }
     }
 }
