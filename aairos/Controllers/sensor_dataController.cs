@@ -60,7 +60,7 @@ namespace aairos.Controllers
                     DENSE_RANK() OVER (PARTITION BY deviceId ORDER BY id DESC) AS r
                   FROM sensor_data
                 ) AS t
-                WHERE t.r <= 100 order by 1 desc")
+                WHERE t.r <= 2 order by 1 desc")
              .Select(s => new SensorDataDto
              {
                  id = s.id,
