@@ -2,6 +2,8 @@
 using aairos.Dto;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace aairos.Controllers
 {
@@ -11,11 +13,16 @@ namespace aairos.Controllers
     {
         private readonly relay_durationsContext _relayDurationsContext;
         private readonly ThresholdContext _thresholdContext;
+        private readonly ValveStatusContext _valveStatusContext;
 
-        public DeviceStateThresholdController(relay_durationsContext relayDurationsContext, ThresholdContext thresholdContext)
+        public DeviceStateThresholdController(
+            relay_durationsContext relayDurationsContext,
+            ThresholdContext thresholdContext,
+            ValveStatusContext valveStatusContext)
         {
             _relayDurationsContext = relayDurationsContext;
             _thresholdContext = thresholdContext;
+            _valveStatusContext = valveStatusContext;
         }
 
         // GET: api/Device/{deviceId}
@@ -32,17 +39,26 @@ namespace aairos.Controllers
             var threshold = await _thresholdContext.Threshold
                 .FirstOrDefaultAsync(t => t.deviceId == deviceId);
 
-            if (relayDuration == null || threshold == null)
+            // Fetch the valve status from ValveStatus table by deviceId
+            var valveStatus = await _valveStatusContext.ValveStatus
+                .FirstOrDefaultAsync(v => v.deviceId == deviceId);
+
+            if (relayDuration == null || threshold == null || valveStatus == null)
             {
                 return NotFound("Data not found for the given deviceId.");
             }
 
+            // Set State based on ValveStatusOnOrOff (0 = Off, 1 = On)
+            string state = valveStatus.ValveStatusOnOrOff == 0 ? "Off" : "On";
+
             // Combine the data into the DTO
             var result = new DeviceStateThresholdDTO
             {
-                State = relayDuration.state,
+                State = state, // State is derived from ValveStatusOnOrOff
                 Threshold_1 = threshold.Threshold_1,
-                Threshold_2 = threshold.Threshold_2
+                Threshold_2 = threshold.Threshold_2,
+                AdminValveStatus = valveStatus.AdminValveStatus, // Add AdminValveStatus
+                ValveStatusOnOrOff = valveStatus.ValveStatusOnOrOff // Add ValveStatusOnOrOff
             };
 
             return Ok(result);
