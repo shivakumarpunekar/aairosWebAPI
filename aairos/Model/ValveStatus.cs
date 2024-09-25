@@ -9,5 +9,6 @@
         public DateTime CreatedDate { get; set; }
         public DateTime UpdatedDate { get; set; }
         public int AdminValveStatus { get; set; } 
+        public Boolean IsAdminSetValveStatus { get; set; }
     }
 }

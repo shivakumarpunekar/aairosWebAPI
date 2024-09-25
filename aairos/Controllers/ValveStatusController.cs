@@ -44,6 +44,7 @@ namespace aairos.Controllers
                 {
                     deviceId = deviceId,
                     ValveStatusOnOrOff = 0, // Default value, you can change this as needed
+                    IsAdminSetValveStatus = false,
                     CreatedDate = DateTime.UtcNow,
                     UpdatedDate = DateTime.UtcNow,
                     // Add other necessary properties like userProfileId if needed
@@ -109,6 +110,8 @@ namespace aairos.Controllers
 
 
 
+
+
         // GET: api/ValveStatus/admin/device/{deviceId}
         [HttpGet("admin/device/{deviceId}")]
         public async Task<ActionResult> GetAdminValveStatusByDevice(int deviceId)
@@ -126,7 +129,8 @@ namespace aairos.Controllers
             return Ok(new
             {
                 valveStatus.AdminValveStatus,
-                valveStatus.ValveStatusOnOrOff
+                valveStatus.ValveStatusOnOrOff,
+                valveStatus.IsAdminSetValveStatus
             });
         }
 
@@ -150,6 +154,9 @@ namespace aairos.Controllers
             // Update AdminValveStatus
             existingStatus.AdminValveStatus = valveStatus.AdminValveStatus;
             existingStatus.UpdatedDate = DateTime.UtcNow;
+
+            // Update IsAdminSetValveStatus based on AdminValveStatus value
+            existingStatus.IsAdminSetValveStatus = valveStatus.AdminValveStatus == 2;
 
             // Logic to update ValveStatusOnOrOff based on AdminValveStatus
             switch (valveStatus.AdminValveStatus)
@@ -184,7 +191,6 @@ namespace aairos.Controllers
 
             return NoContent();
         }
-
 
 
 
