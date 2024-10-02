@@ -174,18 +174,59 @@ namespace aairos.Controllers
             if (userdevice == null)
 
             {
-/*                await _logger.LogAsync($"DELETE: api/userdevices/{id} returned NotFound.");
-*/
+                /*                await _logger.LogAsync($"DELETE: api/userdevices/{id} returned NotFound.");
+                */
                 return NotFound();
             }
 
             _userdeviceContext.UserDevice.Remove(userdevice);
             await _userdeviceContext.SaveChangesAsync();
 
-/*            await _logger.LogAsync($"DELETE: api/userdevice/{id} deleted successfully.");
-*/
+            /*            await _logger.LogAsync($"DELETE: api/userdevice/{id} deleted successfully.");
+            */
             return NoContent();
         }
+
+        // PUT api/<userdevicesController>/byDevice/{deviceId}
+        [HttpPut("byDevice/{deviceId}")]
+        public async Task<IActionResult> PutDeviceStatus(int deviceId, [FromBody] int deviceStatus)
+        {
+            // Map 0 to inactive and 1 to active
+            bool isActive = deviceStatus == 1;
+
+            // Find the user device by deviceId
+            var userDevice = await _userdeviceContext.UserDevice
+                .FirstOrDefaultAsync(ud => ud.deviceId == deviceId);
+
+            if (userDevice == null)
+            {
+                return NotFound(); // Device not found
+            }
+
+            // Update the device status
+            userDevice.deviceStatus = isActive;
+            userDevice.updatedDate = DateTime.UtcNow; // Update the timestamp
+
+            // Save changes
+            try
+            {
+                await _userdeviceContext.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!userdeviceExists(userDevice.userDeviceId))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw; // Handle other exceptions
+                }
+            }
+
+            return NoContent(); // Indicate success
+        }
+
 
         private bool userdeviceExists(int id)
         {
