@@ -43,10 +43,10 @@ namespace aairos.Controllers
             var valveStatus = await _valveStatusContext.ValveStatus
                 .FirstOrDefaultAsync(v => v.deviceId == deviceId);
 
-            if (relayDuration == null || threshold == null || valveStatus == null)
+           /* if (relayDuration == null || threshold == null || valveStatus == null)
             {
                 return NotFound("Data not found for the given deviceId.");
-            }
+            }*/
 
             // Set State based on ValveStatusOnOrOff (0 = Off, 1 = On)
             string state = valveStatus.ValveStatusOnOrOff == 0 ? "Off" : "On";
