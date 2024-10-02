@@ -52,28 +52,37 @@ namespace aairos.Controllers
         [HttpGet("top100perdevice")]
         public async Task<ActionResult<IEnumerable<SensorDataDto>>> GetTop100SensorDataPerDevice()
         {
-            var top100PerDevice = await _context.sensor_data
-             .FromSqlRaw(@"
-                SELECT * FROM (
-                  SELECT
-                    *,
-                    DENSE_RANK() OVER (PARTITION BY deviceId ORDER BY id DESC) AS r
-                  FROM sensor_data
-                ) AS t
-                WHERE t.r <= 1 order by 1 desc")
-             .Select(s => new SensorDataDto
-             {
-                 id = s.id,
-                 sensor1_value = s.sensor1_value,
-                 sensor2_value = s.sensor2_value,
-                 deviceId = s.deviceId,
-                 solenoidValveStatus = s.solenoidValveStatus ? "On" : "Off",
-                 timestamp = s.timestamp,
-                 createdDateTime = s.createdDateTime,
+            try
+            {
+                var top100PerDevice = await _context.sensor_data
+                    .FromSqlRaw(@"
+                         SELECT sd.*
+                         FROM sensor_data sd
+                         INNER JOIN (
+                             SELECT deviceId, MAX(id) AS max_id
+                             FROM sensor_data
+                             GROUP BY deviceId
+                         ) AS latest ON sd.deviceId = latest.deviceId AND sd.id = latest.max_id
+                         ORDER BY sd.id DESC")
+                    .Select(s => new SensorDataDto
+                    {
+                        id = s.id,
+                        sensor1_value = s.sensor1_value,
+                        sensor2_value = s.sensor2_value,
+                        deviceId = s.deviceId,
+                        solenoidValveStatus = s.solenoidValveStatus ? "On" : "Off",
+                        timestamp = s.timestamp,
+                        createdDateTime = s.createdDateTime,
+                    })
+                    .ToListAsync();
 
-             })
-             .ToListAsync();
-            return Ok(top100PerDevice);
+                return Ok(top100PerDevice);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (not shown here)
+                return StatusCode(500, "Internal server error");
+            }
 
         }
 
