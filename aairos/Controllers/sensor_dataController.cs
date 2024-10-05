@@ -274,14 +274,13 @@ namespace aairos.Controllers
             var data = await _context.sensor_data
                 .Where(s => s.deviceId == deviceId)
                 .OrderByDescending(s => s.timestamp)
-                .Take(100)
+                .Take(30)
                 .Select(s => new SensorDataDto
                 {
                     id = s.id,
                     deviceId = s.deviceId,
                     sensor1_value = s.sensor1_value,
                     timestamp = s.timestamp,
-                    createdDateTime = s.createdDateTime,
                 })
                 .ToListAsync();
 
@@ -302,14 +301,13 @@ namespace aairos.Controllers
             var data = await _context.sensor_data
                 .Where(s => s.deviceId == deviceId)
                 .OrderByDescending(s => s.timestamp)
-                .Take(100)
+                .Take(30)
                 .Select(s => new SensorDataDto
                 {
                     id = s.id,
                     deviceId = s.deviceId,
                     sensor2_value = s.sensor2_value,
                     timestamp = s.timestamp,
-                    createdDateTime = s.createdDateTime,
                 })
                 .ToListAsync();
 
@@ -375,41 +373,6 @@ namespace aairos.Controllers
             }
         }
 
-        //This is based on date for 30 days
-        // GET: api/uniqueDatesLast30Days
-        /*[HttpGet("device/{deviceId}/uniqueDatesLast30Days")]
-        public async Task<ActionResult<IEnumerable<string>>> GetUniqueCreatedDatesByDeviceIdLast30Days(int deviceId)
-        {
-            try
-            {
-                var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
-                var data = await _context.sensor_data
-                    .Where(s => s.deviceId == deviceId && s.solenoidValveStatus == true)
-                    .Select(s => s.createdDateTime)
-                    .ToListAsync();
-
-                var uniqueDates = data
-                    .Select(dateString => DateTime.TryParse(dateString, out var createdDateTime) ? createdDateTime.Date : default(DateTime))
-                    .Where(date => date != default(DateTime) && date >= thirtyDaysAgo)
-                    .Distinct()
-                    .OrderByDescending(date => date)
-                    .Select(date => date.ToString("yyyy-MM-dd")) // Format the date as yyyy-MM-dd
-                    *//*.Select(date => date.ToString("dd-MM-yyyy"))*//*
-                    .ToList();
-
-                if (!uniqueDates.Any())
-                {
-                    return NotFound();
-                }
-
-                return Ok(uniqueDates);
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal server error");
-            }
-        }*/
-
         [HttpGet("device/{deviceId}/uniqueDatesLast30Days")]
         public async Task<ActionResult<IEnumerable<string>>> GetUniqueCreatedDatesByDeviceIdLast30Days(int deviceId)
         {
@@ -443,11 +406,6 @@ namespace aairos.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
-
-
-
-
-
 
         // GET: api/sensor_data/date/{date}/device/{deviceId}
         [HttpGet("date/{date}/device/{deviceId}")]
@@ -488,10 +446,6 @@ namespace aairos.Controllers
 
             return Ok(filteredData);
         }
-
-
-
-
 
         private bool SensorDataExists(int id)
         {
