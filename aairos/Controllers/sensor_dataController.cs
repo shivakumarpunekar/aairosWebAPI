@@ -274,7 +274,7 @@ namespace aairos.Controllers
             var data = await _context.sensor_data
                 .Where(s => s.deviceId == deviceId)
                 .OrderByDescending(s => s.timestamp)
-                .Take(30)
+                .Take(2)
                 .Select(s => new SensorDataDto
                 {
                     id = s.id,
@@ -301,7 +301,7 @@ namespace aairos.Controllers
             var data = await _context.sensor_data
                 .Where(s => s.deviceId == deviceId)
                 .OrderByDescending(s => s.timestamp)
-                .Take(30)
+                .Take(2)
                 .Select(s => new SensorDataDto
                 {
                     id = s.id,

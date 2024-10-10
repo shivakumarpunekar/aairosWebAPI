@@ -58,31 +58,33 @@ namespace aairos.Controllers
         {
             var stateDurationsQuery = @"
                                     WITH state_durations AS (
-                                        SELECT
-                                            a.id,
-                                            a.user_id,
-                                            a.state,
-                                            DATE(a.timestamp) AS day,
-                                            TIMESTAMPDIFF(MINUTE, a.timestamp, COALESCE(b.timestamp, NOW())) AS duration_minutes
-                                        FROM relay_durations a
-                                        LEFT JOIN relay_durations b
-                                        ON a.user_id = b.user_id
-                                        AND a.timestamp < b.timestamp
-                                        AND b.timestamp = (
-                                            SELECT MIN(timestamp)
-                                            FROM relay_durations
-                                            WHERE timestamp > a.timestamp
-                                            AND user_id = a.user_id
-                                        )
-                                        WHERE a.state IS NOT NULL
+                                    SELECT
+                                        a.user_id,
+                                        a.state,
+                                        DATE(a.timestamp) AS day,
+                                        TIMESTAMPDIFF(MINUTE, a.timestamp, COALESCE(b.timestamp, NOW())) AS duration_minutes
+                                    FROM relay_durations a
+                                    LEFT JOIN relay_durations b
+                                    ON a.user_id = b.user_id
+                                    AND a.timestamp < b.timestamp
+                                    AND b.timestamp = (
+                                        SELECT MIN(timestamp)
+                                        FROM relay_durations
+                                        WHERE timestamp > a.timestamp
+                                        AND user_id = a.user_id
                                     )
-                                    SELECT id, user_id, day,
-                                        SUM(CASE WHEN state = 'on' THEN duration_minutes ELSE 0 END) AS TotalDurationOnMinutes,
-                                        SUM(CASE WHEN state = 'off' THEN duration_minutes ELSE 0 END) AS TotalDurationOffMinutes
-                                    FROM state_durations
-                                    WHERE user_id = @p0
-                                    GROUP BY  day
-                                    ORDER BY day";
+                                    WHERE a.state IS NOT NULL
+                                )
+                                SELECT
+                                    ROW_NUMBER() OVER() AS Id, -- Or any other unique identifier if possible
+                                    user_id,
+                                    day,
+                                    SUM(CASE WHEN state = 'on' THEN duration_minutes ELSE 0 END) AS TotalDurationOnMinutes,
+                                    SUM(CASE WHEN state = 'off' THEN duration_minutes ELSE 0 END) AS TotalDurationOffMinutes
+                                FROM state_durations
+                                WHERE user_id = @p0
+                                GROUP BY user_id, day
+                                ORDER BY day";
 
             // Execute the query and map the result to StateDurationDTO
             var rawResults = await _context
