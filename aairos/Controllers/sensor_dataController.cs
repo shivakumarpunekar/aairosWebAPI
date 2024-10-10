@@ -378,19 +378,27 @@ namespace aairos.Controllers
         {
             try
             {
+                // Declare and initialize the thirtyDaysAgo variable
                 var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
+
                 var data = await _context.sensor_data
-                    .Where(s => s.deviceId == deviceId && s.solenoidValveStatus == true)
-                    .Select(s => s.createdDateTime)
-                    .ToListAsync();
+                .Where(s => s.deviceId == deviceId && s.solenoidValveStatus == true)
+                .Select(s => s.createdDateTime)
+                .ToListAsync();
+
+                Console.WriteLine("Retrieved data: " + string.Join(", ", data)); // Log retrieved data
 
                 var uniqueDates = data
-                    .Select(dateString => DateTime.TryParse(dateString, out var createdDateTime) ? createdDateTime.Date : default(DateTime?))
-                    .Where(date => date != null && date >= thirtyDaysAgo)
+                    .Select(dateString => DateTime.TryParse(dateString, out var createdDateTime) ? createdDateTime : (DateTime?)null)
+                    .Where(date => date != null && date.Value >= thirtyDaysAgo)
+                    .Select(date => date.Value.Date)
                     .Distinct()
                     .OrderByDescending(date => date)
-                    .Select(date => date.Value.ToString("yyyy-MM-dd"))  // Format the date
+                    .Select(date => date.ToString("yyyy-MM-dd"))
                     .ToList();
+
+                Console.WriteLine("Unique dates: " + string.Join(", ", uniqueDates)); // Log unique dates
+
 
                 if (!uniqueDates.Any())
                 {
@@ -401,11 +409,12 @@ namespace aairos.Controllers
             }
             catch (Exception ex)
             {
-                // Log exception
+                // Log the exception
                 Console.WriteLine(ex.Message);
                 return StatusCode(500, "Internal server error");
             }
         }
+
 
         // GET: api/sensor_data/date/{date}/device/{deviceId}
         [HttpGet("date/{date}/device/{deviceId}")]
