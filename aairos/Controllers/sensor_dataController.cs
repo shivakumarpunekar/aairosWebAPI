@@ -47,7 +47,6 @@ namespace aairos.Controllers
             return Ok(data);
         }
 
-
         // GET: api/sensor_data/top100perdevice
         [HttpGet("top100perdevice")]
         public async Task<ActionResult<IEnumerable<SensorDataDto>>> GetTop100SensorDataPerDevice()
@@ -86,11 +85,8 @@ namespace aairos.Controllers
 
         }
 
-
-
-
         // GET: api/sensor_data/profile/{userProfileId}/device/{deviceId}
-        [HttpGet("profile/{userProfileId}/device/{deviceId}")]
+        /*[HttpGet("profile/{userProfileId}/device/{deviceId}")]
         public async Task<ActionResult<IEnumerable<SensorDataDto>>> GetSensorDataByuserProfileIdAndDeviceId(int userProfileId, int deviceId)
         {
             var data = await (from sd in _context.sensor_data
@@ -114,14 +110,10 @@ namespace aairos.Controllers
             }
 
             return Ok(data);
-        }
-
-
-
-
+        }*/
 
         // GET: api/GetUniqueDeviceIds
-        [HttpGet("deviceId")]
+       /* [HttpGet("deviceId")]
         public async Task<ActionResult<IEnumerable<object>>> GetUniqueDeviceIds()
         {
             var uniqueDeviceIds = await _context.sensor_data
@@ -130,8 +122,7 @@ namespace aairos.Controllers
                 .ToListAsync();
 
             return Ok(uniqueDeviceIds);
-        }
-
+        }*/
 
         // GET: api/sensor_data/device/{deviceId}
         [HttpGet("device/{deviceId}")]
@@ -139,7 +130,7 @@ namespace aairos.Controllers
         {
             var data = await _context.sensor_data
                 .Where(s => s.deviceId == deviceId)
-                .OrderByDescending(s => s.timestamp)
+                .OrderByDescending(s => s.createdDateTime)
                 .Take(30)
                 .Select(s => new SensorDataDto
                 {
@@ -273,7 +264,7 @@ namespace aairos.Controllers
         {
             var data = await _context.sensor_data
                 .Where(s => s.deviceId == deviceId)
-                .OrderByDescending(s => s.timestamp)
+                .OrderByDescending(s => s.createdDateTime)
                 .Take(2)
                 .Select(s => new SensorDataDto
                 {
@@ -300,7 +291,7 @@ namespace aairos.Controllers
         {
             var data = await _context.sensor_data
                 .Where(s => s.deviceId == deviceId)
-                .OrderByDescending(s => s.timestamp)
+                .OrderByDescending(s => s.createdDateTime)
                 .Take(2)
                 .Select(s => new SensorDataDto
                 {
