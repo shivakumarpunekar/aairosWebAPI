@@ -25,7 +25,12 @@ namespace aairos.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<relay_durations>>> GetAllrelay_durations()
         {
-            var relay_durations = await _context.relay_durations.ToListAsync();
+            /*var relay_durations = await _context.relay_durations.ToListAsync();
+            return Ok(relay_durations);*/
+            var relay_durations = await _context.relay_durations
+               .OrderByDescending(r => r.timestamp) // Change "timestamp" to the column you want to sort by
+               .ToListAsync();
+
             return Ok(relay_durations);
         }
 
@@ -39,14 +44,13 @@ namespace aairos.Controllers
                         WHERE user_id = @p0
                         ORDER BY last_updated DESC
                         LIMIT 0, 500;";
-
             var relayDurations = await _context.relay_durations
                 .FromSqlRaw(query, user_id)
                 .ToListAsync();
 
             if (relayDurations == null || !relayDurations.Any())
             {
-                return NotFound();
+                return NotFound("No data available for the specified Device.");
             }
 
             // Return the results mapped to the DTO
@@ -85,6 +89,7 @@ namespace aairos.Controllers
                                 WHERE user_id = @p0
                                 GROUP BY user_id, day
                                 ORDER BY day";
+            // in this table 1,7,9 data is there, but 7 not responding. 
 
             // Execute the query and map the result to StateDurationDTO
             var rawResults = await _context
@@ -94,13 +99,10 @@ namespace aairos.Controllers
 
             if (!rawResults.Any())
             {
-                return NotFound();
+                return NotFound("No state duration data found for the specified Device.");
             }
 
             return Ok(rawResults);
         }
-
-
-
     }
 }
