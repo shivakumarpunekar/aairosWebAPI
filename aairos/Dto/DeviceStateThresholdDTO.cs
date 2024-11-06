@@ -7,5 +7,6 @@
         public int Threshold_2 { get; set; }
         public int AdminValveStatus { get; set; }
         public int ValveStatusOnOrOff { get; set; }
+        public string solenoidValveStatus { get; set; }
     }
 }

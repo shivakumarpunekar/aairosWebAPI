@@ -1,5 +1,6 @@
 ﻿using aairos.Data;
 using aairos.Dto;
+using aairos.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -14,15 +15,18 @@ namespace aairos.Controllers
         private readonly relay_durationsContext _relayDurationsContext;
         private readonly ThresholdContext _thresholdContext;
         private readonly ValveStatusContext _valveStatusContext;
+        private readonly sensor_dataContext _sensorDataContext;
 
         public DeviceStateThresholdController(
             relay_durationsContext relayDurationsContext,
             ThresholdContext thresholdContext,
-            ValveStatusContext valveStatusContext)
+            ValveStatusContext valveStatusContext,
+            sensor_dataContext sensorDataContext)
         {
             _relayDurationsContext = relayDurationsContext;
             _thresholdContext = thresholdContext;
             _valveStatusContext = valveStatusContext;
+            _sensorDataContext = sensorDataContext;
         }
 
         // GET: api/Device/{deviceId}
@@ -43,13 +47,22 @@ namespace aairos.Controllers
             var valveStatus = await _valveStatusContext.ValveStatus
                 .FirstOrDefaultAsync(v => v.deviceId == deviceId);
 
-            if (relayDuration == null || threshold == null || valveStatus == null)
+            // Fetch the sensor data from sensordara table by deviceId
+            var sensorData = await _sensorDataContext.sensor_data
+               .Where(s => s.deviceId == deviceId)
+               .OrderByDescending(s => s.id)
+               .FirstOrDefaultAsync();
+
+            if (relayDuration == null || threshold == null || valveStatus == null || sensorData == null)
             {
                 return NotFound("Data not found for the given deviceId.");
             }
 
             // Set State based on ValveStatusOnOrOff (0 = Off, 1 = On)
             string state = valveStatus.ValveStatusOnOrOff == 0 ? "Off" : "On";
+
+            // Map solenoidValveStatus to a bool (1 = true, 0 = false)
+            bool solenoidValveStatus = sensorData.solenoidValveStatus;
 
             // Combine the data into the DTO
             var result = new DeviceStateThresholdDTO
@@ -58,7 +71,8 @@ namespace aairos.Controllers
                 Threshold_1 = threshold.Threshold_1,
                 Threshold_2 = threshold.Threshold_2,
                 AdminValveStatus = valveStatus.AdminValveStatus, // Add AdminValveStatus
-                ValveStatusOnOrOff = valveStatus.ValveStatusOnOrOff // Add ValveStatusOnOrOff
+                ValveStatusOnOrOff = valveStatus.ValveStatusOnOrOff, // Add ValveStatusOnOrOff
+                solenoidValveStatus = sensorData.solenoidValveStatus ? "On" : "Off"
             };
 
             return Ok(result);
