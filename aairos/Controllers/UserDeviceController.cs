@@ -27,6 +27,7 @@ namespace aairos.Controllers
         public async Task<ActionResult<IEnumerable<UserDeviceDto>>> GetUserDevices()
         {
             var userDevices = await _userdeviceContext.UserDevice
+                .OrderByDescending(ud => ud.userDeviceId)
                 .ToListAsync();
 
             var userDeviceDtos = userDevices.Select(ud => new UserDeviceDto
@@ -76,6 +77,7 @@ namespace aairos.Controllers
         {
             var userDevices = await _userdeviceContext.UserDevice
                 .Where(ud => ud.userProfileId == userProfileId)
+                .OrderByDescending(ud => ud.userDeviceId)
                 .ToListAsync();
 
             if (userDevices == null || userDevices.Count == 0)
