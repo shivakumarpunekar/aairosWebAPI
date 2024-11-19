@@ -113,7 +113,7 @@ namespace aairos.Controllers
         }*/
 
         // GET: api/GetUniqueDeviceIds
-       /* [HttpGet("deviceId")]
+        [HttpGet("deviceId")]
         public async Task<ActionResult<IEnumerable<object>>> GetUniqueDeviceIds()
         {
             var uniqueDeviceIds = await _context.sensor_data
@@ -122,7 +122,7 @@ namespace aairos.Controllers
                 .ToListAsync();
 
             return Ok(uniqueDeviceIds);
-        }*/
+        }
 
         // GET: api/sensor_data/device/{deviceId}
         [HttpGet("device/{deviceId}")]
