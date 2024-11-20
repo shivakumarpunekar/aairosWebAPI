@@ -14,10 +14,12 @@ namespace aairos.Controllers
     public class ValveStatusController : ControllerBase
     {
         private readonly ValveStatusContext _context;
+        private readonly historyvalvestatusContext _historyvalvestatus;
 
-        public ValveStatusController(ValveStatusContext context)
+        public ValveStatusController(ValveStatusContext context, historyvalvestatusContext historyvalvestatus)
         {
             _context = context;
+            _historyvalvestatus = historyvalvestatus;
         }
 
         // GET: api/ValveStatus
@@ -169,6 +171,20 @@ namespace aairos.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+
+                // Log the update into historyvalvestatus
+                var historyEntry = new historyvalvestatusModel
+                {
+                    ValveStatusOnOrOff = existingStatus.ValveStatusOnOrOff,
+                    deviceId = existingStatus.deviceId,
+                    userProfileId = existingStatus.userProfileId,
+                    UpdatedDate = existingStatus.UpdatedDate,
+                    AdminValveStatus = existingStatus.AdminValveStatus,
+                    IsAdminSetValveStatus = existingStatus.IsAdminSetValveStatus
+                };
+
+                _historyvalvestatus.historyvalvestatus.Add(historyEntry);
+                await _historyvalvestatus.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -183,53 +199,6 @@ namespace aairos.Controllers
             }
 
             return NoContent();
-        }
-
-        // GET: api/ValveStatus/admin/device/{deviceId}/dates
-        [HttpGet("admin/device/{deviceId}/dates")]
-        public async Task<ActionResult<IEnumerable<string>>> GetAdminValveStatusDates(int deviceId)
-        {
-            var dates = await _context.ValveStatus
-                .Where(v => v.deviceId == deviceId)
-                .Select(v => v.UpdatedDate.Date) // Extract date portion only
-                .Distinct()
-                .OrderBy(d => d)
-                .ToListAsync();
-
-            // Format dates as strings (yyyy-MM-dd)
-            var formattedDates = dates.Select(d => d.ToString("yyyy-MM-dd")).ToList();
-
-            return Ok(formattedDates);
-        }
-
-        // GET: api/ValveStatus/admin/device/{deviceId}/status/{date}
-        [HttpGet("admin/device/{deviceId}/status/{date}")]
-        public async Task<ActionResult<IEnumerable<object>>> GetAdminValveStatusByDate(int deviceId, string date)
-        {
-            if (!DateTime.TryParse(date, out var parsedDate))
-            {
-                return BadRequest("Invalid date format. Use 'yyyy-MM-dd'.");
-            }
-
-            var statuses = await _context.ValveStatus
-                .Where(v => v.deviceId == deviceId && v.UpdatedDate.Date == parsedDate.Date)
-                .Select(v => new
-                {
-                    v.ValveStatusId,
-                    v.AdminValveStatus,
-                    v.ValveStatusOnOrOff,
-                    v.IsAdminSetValveStatus,
-                    v.UpdatedDate
-                })
-                .OrderBy(v => v.UpdatedDate) // Sort by UpdatedDate (optional)
-                .ToListAsync();
-
-            if (statuses == null || statuses.Count == 0)
-            {
-                return NotFound("No statuses found for the given deviceId and date.");
-            }
-
-            return Ok(statuses);
         }
 
         private bool ValveStatusExists(int id)
