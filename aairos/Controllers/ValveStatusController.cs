@@ -91,6 +91,21 @@ namespace aairos.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+
+                // Log the update into historyvalvestatus
+                var historyEntry = new historyvalvestatusModel
+                {
+                    ValveStatusOnOrOff = existingStatus.ValveStatusOnOrOff,
+                    deviceId = existingStatus.deviceId,
+                    userProfileId = existingStatus.userProfileId,
+                    UpdatedDate = existingStatus.UpdatedDate,
+                    AdminValveStatus = existingStatus.AdminValveStatus,
+                    IsAdminSetValveStatus = existingStatus.IsAdminSetValveStatus
+                };
+
+                _historyvalvestatus.historyvalvestatus.Add(historyEntry);
+                await _historyvalvestatus.SaveChangesAsync();
+
             }
             catch (DbUpdateConcurrencyException)
             {
