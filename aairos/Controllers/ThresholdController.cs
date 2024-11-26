@@ -42,6 +42,7 @@ namespace aairos.Controllers
 
             return Ok(threshold);
         }
+
         // GET: api/Threshold/device/{deviceId} (Fetch by Device ID)
         [HttpGet("device/{deviceId}")]
         public async Task<ActionResult<Threshold>> GetThresholdByDeviceId(int deviceId)
@@ -55,9 +56,10 @@ namespace aairos.Controllers
 
             return Ok(threshold);
         }
+
         // POST: api/Threshold/CreateSingle
         [HttpPost("CreateSingle")]
-        public async Task<IActionResult> CreateSingleThreshold(int userProfileId, int deviceId, int Threshold_1, int Threshold_2)
+        public async Task<IActionResult> CreateSingleThreshold(int userProfileId, int deviceId, int Threshold_1, int Threshold_2, int ThresholdAverage)
         {
             var threshold = new Threshold
             {
@@ -65,6 +67,7 @@ namespace aairos.Controllers
                 deviceId = deviceId,
                 Threshold_1 = Threshold_1,
                 Threshold_2 = Threshold_2,
+                ThresholdAverage = ThresholdAverage,
                 createdDateTime = DateTime.UtcNow.ToString(), // Ensures it's stored as a string
                 updatedDateTime = DateTime.UtcNow
             };
@@ -77,7 +80,7 @@ namespace aairos.Controllers
 
         // PUT: api/Threshold/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateThreshold(int id, int userProfileId, int deviceId, int Threshold_1, int Threshold_2)
+        public async Task<IActionResult> UpdateThreshold(int id, int userProfileId, int deviceId, int Threshold_1, int Threshold_2, int ThresholdAverage)
         {
             var threshold = await _context.Threshold.FindAsync(id);
 
@@ -91,6 +94,7 @@ namespace aairos.Controllers
             threshold.deviceId = deviceId;
             threshold.Threshold_1 = Threshold_1;
             threshold.Threshold_2 = Threshold_2;
+            threshold.ThresholdAverage = ThresholdAverage;
             threshold.updatedDateTime = DateTime.UtcNow; // Update only the updatedDateTime
 
             // Save changes to the database

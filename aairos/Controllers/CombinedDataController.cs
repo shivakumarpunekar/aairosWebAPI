@@ -24,7 +24,7 @@ namespace aairos.Controllers
         }
 
         // GET: api/CombinedData
-        [HttpGet]
+       /* [HttpGet]
         public async Task<ActionResult<IEnumerable<CombinedDataViewModel>>> GetCombinedData()
         {
             var devices = await _deviceContext.device.ToListAsync();
@@ -49,8 +49,8 @@ namespace aairos.Controllers
                 };
             }).ToList();
 
-/*            await _logger.LogAsync($"GET: api/CombinedData returned {combinedData.Count} records.");
-*/            return Ok(combinedData);
+*//*            await _logger.LogAsync($"GET: api/CombinedData returned {combinedData.Count} records.");
+*//*            return Ok(combinedData);
         }
 
         // POST: api/CombinedData
@@ -59,8 +59,8 @@ namespace aairos.Controllers
         {
             if (inputData == null)
             {
-/*                await _logger.LogAsync("POST: api/CombinedData received null input data.");
-*/                return BadRequest();
+*//*                await _logger.LogAsync("POST: api/CombinedData received null input data.");
+*//*                return BadRequest();
             }
 
             // Create a new UserProfile
@@ -110,8 +110,8 @@ namespace aairos.Controllers
                 ValveStatus = deviceDetail.ValveStatus
             };
 
-/*            await _logger.LogAsync($"POST: api/CombinedData created new combined data with DeviceId {deviceDetail.DeviceId}.");
-*/            return CreatedAtAction(nameof(GetCombinedData), new { id = deviceDetail.DeviceId }, combinedData);
-        }
+*//*            await _logger.LogAsync($"POST: api/CombinedData created new combined data with DeviceId {deviceDetail.DeviceId}.");
+*//*            return CreatedAtAction(nameof(GetCombinedData), new { id = deviceDetail.DeviceId }, combinedData);
+        }*/
     }
 }
