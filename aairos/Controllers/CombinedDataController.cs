@@ -24,7 +24,7 @@ namespace aairos.Controllers
         }
 
         // GET: api/CombinedData
-       /* [HttpGet]
+        [HttpGet]
         public async Task<ActionResult<IEnumerable<CombinedDataViewModel>>> GetCombinedData()
         {
             var devices = await _deviceContext.device.ToListAsync();
