@@ -47,41 +47,46 @@ namespace aairos.Controllers
             return Ok(data);
         }
 
-
         // GET: api/sensor_data/top100perdevice
         [HttpGet("top100perdevice")]
         public async Task<ActionResult<IEnumerable<SensorDataDto>>> GetTop100SensorDataPerDevice()
         {
-            var top100PerDevice = await _context.sensor_data
-             .FromSqlRaw(@"
-                SELECT * FROM (
-                  SELECT
-                    *,
-                    DENSE_RANK() OVER (PARTITION BY deviceId ORDER BY id DESC) AS r
-                  FROM sensor_data
-                ) AS t
-                WHERE t.r <= 100 order by 1 desc")
-             .Select(s => new SensorDataDto
-             {
-                 id = s.id,
-                 sensor1_value = s.sensor1_value,
-                 sensor2_value = s.sensor2_value,
-                 deviceId = s.deviceId,
-                 solenoidValveStatus = s.solenoidValveStatus ? "On" : "Off",
-                 timestamp = s.timestamp,
-                 createdDateTime = s.createdDateTime,
+            try
+            {
+                var top100PerDevice = await _context.sensor_data
+                    .FromSqlRaw(@"
+                         SELECT sd.*
+                         FROM sensor_data sd
+                         INNER JOIN (
+                             SELECT deviceId, MAX(id) AS max_id
+                             FROM sensor_data
+                             GROUP BY deviceId
+                         ) AS latest ON sd.deviceId = latest.deviceId AND sd.id = latest.max_id
+                         ORDER BY sd.id DESC")
+                    .Select(s => new SensorDataDto
+                    {
+                        id = s.id,
+                        sensor1_value = s.sensor1_value,
+                        sensor2_value = s.sensor2_value,
+                        deviceId = s.deviceId,
+                        solenoidValveStatus = s.solenoidValveStatus ? "On" : "Off",
+                        timestamp = s.timestamp,
+                        createdDateTime = s.createdDateTime,
+                    })
+                    .ToListAsync();
 
-             })
-             .ToListAsync();
-            return Ok(top100PerDevice);
+                return Ok(top100PerDevice);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception (not shown here)
+                return StatusCode(500, "Internal server error");
+            }
 
         }
 
-
-
-
         // GET: api/sensor_data/profile/{userProfileId}/device/{deviceId}
-        [HttpGet("profile/{userProfileId}/device/{deviceId}")]
+        /*[HttpGet("profile/{userProfileId}/device/{deviceId}")]
         public async Task<ActionResult<IEnumerable<SensorDataDto>>> GetSensorDataByuserProfileIdAndDeviceId(int userProfileId, int deviceId)
         {
             var data = await (from sd in _context.sensor_data
@@ -105,11 +110,7 @@ namespace aairos.Controllers
             }
 
             return Ok(data);
-        }
-
-
-
-
+        }*/
 
         // GET: api/GetUniqueDeviceIds
         [HttpGet("deviceId")]
@@ -123,15 +124,14 @@ namespace aairos.Controllers
             return Ok(uniqueDeviceIds);
         }
 
-
         // GET: api/sensor_data/device/{deviceId}
         [HttpGet("device/{deviceId}")]
         public async Task<ActionResult<IEnumerable<SensorDataDto>>> GetSensorDataByDeviceId(int deviceId)
         {
             var data = await _context.sensor_data
                 .Where(s => s.deviceId == deviceId)
-                .OrderByDescending(s => s.timestamp)
-                .Take(100)
+                .OrderByDescending(s => s.id)
+                .Take(30)
                 .Select(s => new SensorDataDto
                 {
                     id = s.id,
@@ -264,15 +264,14 @@ namespace aairos.Controllers
         {
             var data = await _context.sensor_data
                 .Where(s => s.deviceId == deviceId)
-                .OrderByDescending(s => s.timestamp)
-                .Take(100)
+                .OrderByDescending(s => s.id)
+                .Take(2)
                 .Select(s => new SensorDataDto
                 {
                     id = s.id,
                     deviceId = s.deviceId,
                     sensor1_value = s.sensor1_value,
                     timestamp = s.timestamp,
-                    createdDateTime = s.createdDateTime,
                 })
                 .ToListAsync();
 
@@ -292,15 +291,14 @@ namespace aairos.Controllers
         {
             var data = await _context.sensor_data
                 .Where(s => s.deviceId == deviceId)
-                .OrderByDescending(s => s.timestamp)
-                .Take(100)
+                .OrderByDescending(s => s.id)
+                .Take(2)
                 .Select(s => new SensorDataDto
                 {
                     id = s.id,
                     deviceId = s.deviceId,
                     sensor2_value = s.sensor2_value,
                     timestamp = s.timestamp,
-                    createdDateTime = s.createdDateTime,
                 })
                 .ToListAsync();
 
@@ -366,59 +364,32 @@ namespace aairos.Controllers
             }
         }
 
-        //This is based on date for 30 days
-        // GET: api/uniqueDatesLast30Days
-        /*[HttpGet("device/{deviceId}/uniqueDatesLast30Days")]
-        public async Task<ActionResult<IEnumerable<string>>> GetUniqueCreatedDatesByDeviceIdLast30Days(int deviceId)
-        {
-            try
-            {
-                var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
-                var data = await _context.sensor_data
-                    .Where(s => s.deviceId == deviceId && s.solenoidValveStatus == true)
-                    .Select(s => s.createdDateTime)
-                    .ToListAsync();
-
-                var uniqueDates = data
-                    .Select(dateString => DateTime.TryParse(dateString, out var createdDateTime) ? createdDateTime.Date : default(DateTime))
-                    .Where(date => date != default(DateTime) && date >= thirtyDaysAgo)
-                    .Distinct()
-                    .OrderByDescending(date => date)
-                    .Select(date => date.ToString("yyyy-MM-dd")) // Format the date as yyyy-MM-dd
-                    *//*.Select(date => date.ToString("dd-MM-yyyy"))*//*
-                    .ToList();
-
-                if (!uniqueDates.Any())
-                {
-                    return NotFound();
-                }
-
-                return Ok(uniqueDates);
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal server error");
-            }
-        }*/
-
         [HttpGet("device/{deviceId}/uniqueDatesLast30Days")]
         public async Task<ActionResult<IEnumerable<string>>> GetUniqueCreatedDatesByDeviceIdLast30Days(int deviceId)
         {
             try
             {
+                // Declare and initialize the thirtyDaysAgo variable
                 var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
+
                 var data = await _context.sensor_data
-                    .Where(s => s.deviceId == deviceId && s.solenoidValveStatus == true)
-                    .Select(s => s.createdDateTime)
-                    .ToListAsync();
+                .Where(s => s.deviceId == deviceId && s.solenoidValveStatus == true)
+                .Select(s => s.createdDateTime)
+                .ToListAsync();
+
+                Console.WriteLine("Retrieved data: " + string.Join(", ", data)); // Log retrieved data
 
                 var uniqueDates = data
-                    .Select(dateString => DateTime.TryParse(dateString, out var createdDateTime) ? createdDateTime.Date : default(DateTime?))
-                    .Where(date => date != null && date >= thirtyDaysAgo)
+                    .Select(dateString => DateTime.TryParse(dateString, out var createdDateTime) ? createdDateTime : (DateTime?)null)
+                    .Where(date => date != null && date.Value >= thirtyDaysAgo)
+                    .Select(date => date.Value.Date)
                     .Distinct()
                     .OrderByDescending(date => date)
-                    .Select(date => date.Value.ToString("yyyy-MM-dd"))  // Format the date
+                    .Select(date => date.ToString("yyyy-MM-dd"))
                     .ToList();
+
+                Console.WriteLine("Unique dates: " + string.Join(", ", uniqueDates)); // Log unique dates
+
 
                 if (!uniqueDates.Any())
                 {
@@ -429,15 +400,11 @@ namespace aairos.Controllers
             }
             catch (Exception ex)
             {
-                // Log exception
+                // Log the exception
                 Console.WriteLine(ex.Message);
                 return StatusCode(500, "Internal server error");
             }
         }
-
-
-
-
 
 
         // GET: api/sensor_data/date/{date}/device/{deviceId}
@@ -479,10 +446,6 @@ namespace aairos.Controllers
 
             return Ok(filteredData);
         }
-
-
-
-
 
         private bool SensorDataExists(int id)
         {
