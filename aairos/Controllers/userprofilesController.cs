@@ -197,6 +197,11 @@ namespace aairos.Controllers
             _context.UserProfile.Add(userprofile);
             await _context.SaveChangesAsync();
 
+            // Update the Login entry's UserProfileId field
+            login.userProfileId = userprofile.userProfileId;
+            _context.Entry(login).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+
             return CreatedAtAction(nameof(Getuserprofile), new { id = userprofile.userProfileId }, userprofile);
         }
 
