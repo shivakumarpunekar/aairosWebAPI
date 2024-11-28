@@ -10,5 +10,6 @@ namespace aairos.Data
         }
 
         public DbSet<aairos.Model.Login> Login { get; set; }
+        public DbSet<aairos.Model.userprofile> userprofile { get; set; }
     }
 }

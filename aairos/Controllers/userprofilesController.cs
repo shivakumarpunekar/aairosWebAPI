@@ -157,13 +157,19 @@ namespace aairos.Controllers
         [HttpPost]
         public async Task<ActionResult<userprofile>> Postuserprofile(userprofile userprofile)
         {
-            // Check if UserName or MobileNumber already exists
+            // Validate that UserName and Password are provided
+            if (string.IsNullOrEmpty(userprofile.UserName) || string.IsNullOrEmpty(userprofile.Password))
+            {
+                return BadRequest("UserName and Password are required.");
+            }
+
+            // Check if the UserName or MobileNumber already exists in userprofile
             var existingUserName = await _context.UserProfile.AnyAsync(u => u.UserName == userprofile.UserName);
             var existingMobileNumber = await _context.UserProfile.AnyAsync(u => u.MobileNumber == userprofile.MobileNumber);
 
             if (existingUserName)
             {
-               return Conflict(new { message = "UserName already exists." });
+                return Conflict(new { message = "UserName already exists." });
             }
 
             if (existingMobileNumber)
@@ -171,8 +177,23 @@ namespace aairos.Controllers
                 return Conflict(new { message = "MobileNumber already exists." });
             }
 
-            userprofile.CreatedDate = DateTime.UtcNow;
+            // Create a new Login entry
+            var login = new Login
+            {
+                UserName = userprofile.UserName,
+                Password = userprofile.Password,
+                IsAdmin = false // or set based on your logic
+            };
 
+            _context.Login.Add(login);
+            await _context.SaveChangesAsync();
+
+            // Use the generated LoginId as the userProfileId
+            userprofile.userProfileId = login.LoginId;
+            userprofile.CreatedDate = DateTime.UtcNow;
+            userprofile.UpdatedDate = DateTime.UtcNow;
+
+            // Insert into userprofile table
             _context.UserProfile.Add(userprofile);
             await _context.SaveChangesAsync();
 
