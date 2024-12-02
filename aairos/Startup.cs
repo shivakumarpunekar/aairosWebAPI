@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using OfficeOpenXml;
 
 
 namespace aairos
@@ -24,6 +25,9 @@ namespace aairos
             // Register FileLoggerService with a specific log file path and log retention period
             services.AddSingleton<FileLoggerService>(provider =>
                 new FileLoggerService("log.txt", TimeSpan.FromDays(7)));
+
+            // Set the LicenseContext property for EPPlus
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
             //Add JWT authentication
             var secretKey = Configuration["JwtSettings:SecretKey"];

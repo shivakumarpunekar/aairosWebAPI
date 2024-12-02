@@ -6,6 +6,7 @@ using aairos.Dto;
 using aairos.Services;
 using OfficeOpenXml;
 using System.IO;
+using MySqlConnector;
 
 namespace aairos.Controllers
 {
@@ -256,8 +257,6 @@ namespace aairos.Controllers
 */            return NoContent();
         }
 
-
-
         // GET: api/sensor_data/device/{deviceId}/sensor1
         [HttpGet("device/{deviceId}/sensor1")]
         public async Task<ActionResult<IEnumerable<SensorDataDto>>> GetSensor1DataByDeviceId(int deviceId)
@@ -282,8 +281,6 @@ namespace aairos.Controllers
 
             return Ok(data);
         }
-
-
 
         // GET: api/sensor_data/device/{deviceId}/sensor2
         [HttpGet("device/{deviceId}/sensor2")]
@@ -310,57 +307,78 @@ namespace aairos.Controllers
             return Ok(data);
         }
 
-
         [HttpGet("export")]
-        public async Task<IActionResult> ExportToExcel([FromQuery] int userProfileId, [FromQuery] int deviceId, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        public async Task<IActionResult> DownloadExcel([FromQuery] int userProfileId, [FromQuery] int deviceId, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
-            var sensorData = await (from sd in _context.sensor_data
-                                    join ud in _context.UserDevice on sd.deviceId equals ud.deviceId
-                                    join up in _context.UserProfile on ud.userProfileId equals up.userProfileId
-                                    where ud.userProfileId == userProfileId && sd.deviceId == deviceId
-                                    && sd.timestamp >= startDate && sd.timestamp <= endDate
-                                    select new
-                                    {
-                                        Username = $"{up.FirstName} {up.MiddleName} {up.LastName}",
-                                        sd.deviceId,
-                                        sd.sensor1_value,
-                                        sd.sensor2_value,
-                                        solenoidValveStatus = sd.solenoidValveStatus ? "On" : "Off",
-                                        sd.createdDateTime
-                                    }).ToListAsync();
-
-            if (!sensorData.Any())
+            try
             {
-                return NotFound();
-            }
-            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-            using (var package = new ExcelPackage())
-            {
-                var worksheet = package.Workbook.Worksheets.Add("Sensor Data");
-                worksheet.Cells["A1"].Value = "Username";
-                worksheet.Cells["B1"].Value = "Device ID";
-                worksheet.Cells["C1"].Value = "Sensor 1 Value";
-                worksheet.Cells["D1"].Value = "Sensor 2 Value";
-                worksheet.Cells["E1"].Value = "Solenoid Valve Status";
-                worksheet.Cells["F1"].Value = "Created DateTime";
+                // Set the LicenseContext property for EPPlus
+                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
-                var row = 2;
-                foreach (var data in sensorData)
+                // Increase the command timeout (default is 30 seconds)
+                _context.Database.SetCommandTimeout(180); // Set the timeout to 3 minutes
+
+                // Fetch data from the database
+                var data = await (from sd in _context.sensor_data.AsNoTracking()
+                                  join ud in _context.UserDevice.AsNoTracking() on sd.deviceId equals ud.deviceId
+                                  join up in _context.UserProfile.AsNoTracking() on ud.userProfileId equals up.userProfileId
+                                  where ud.userProfileId == userProfileId
+                                        && sd.deviceId == deviceId
+                                        && sd.timestamp >= startDate
+                                        && sd.timestamp <= endDate
+                                  select new
+                                  {
+                                       sd.id,
+                                      Username = $"{up.FirstName} {up.MiddleName} {up.LastName}".Trim(),
+                                      sd.deviceId,
+                                      sd.sensor1_value,
+                                      sd.sensor2_value,
+                                      SolenoidValveStatus = sd.solenoidValveStatus ? "On" : "Off",
+                                      sd.timestamp
+                                  }).ToListAsync();
+
+                if (!data.Any())
                 {
-                    worksheet.Cells[$"A{row}"].Value = data.Username;
-                    worksheet.Cells[$"B{row}"].Value = data.deviceId;
-                    worksheet.Cells[$"C{row}"].Value = data.sensor1_value;
-                    worksheet.Cells[$"D{row}"].Value = data.sensor2_value;
-                    worksheet.Cells[$"E{row}"].Value = data.solenoidValveStatus;
-                    worksheet.Cells[$"F{row}"].Value = data.createdDateTime;
-                    row++;
+                    return NotFound(new { message = "No data found for the specified filters." });
                 }
 
-                var stream = new MemoryStream();
-                package.SaveAs(stream);
-                stream.Position = 0;
-                var fileName = $"SensorData_{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.xlsx";
-                return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+                // Generate Excel file
+                using var package = new ExcelPackage();
+                var worksheet = package.Workbook.Worksheets.Add("Sensor Data");
+
+                // Add headers
+                worksheet.Cells[1, 1].Value = "Username";
+                worksheet.Cells[1, 2].Value = "Device ID";
+                worksheet.Cells[1, 3].Value = "Sensor1 Value";
+                worksheet.Cells[1, 4].Value = "Sensor2 Value";
+                worksheet.Cells[1, 5].Value = "Solenoid Valve Status";
+                worksheet.Cells[1, 6].Value = "Created DateTime";
+
+                // Populate data
+                for (int i = 0; i < data.Count; i++)
+                {
+                    worksheet.Cells[i + 2, 1].Value = data[i].Username;
+                    worksheet.Cells[i + 2, 2].Value = data[i].deviceId;
+                    worksheet.Cells[i + 2, 3].Value = data[i].sensor1_value;
+                    worksheet.Cells[i + 2, 4].Value = data[i].sensor2_value;
+                    worksheet.Cells[i + 2, 5].Value = data[i].SolenoidValveStatus;
+                    worksheet.Cells[i + 2, 6].Value = data[i].timestamp.ToString("yyyy-MM-dd HH:mm:ss");
+                }
+
+                // Format as table
+                worksheet.Cells[1, 1, data.Count + 1, 6].AutoFitColumns();
+                worksheet.Cells[1, 1, 1, 6].Style.Font.Bold = true;
+
+                // Convert to a byte array
+                var excelData = package.GetAsByteArray();
+
+                // Return as a file download
+                return File(excelData, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "SensorData.xlsx");
+            }
+            catch (Exception ex)
+            {
+                // Log the error details (You may want to log this to a logging service or file)
+                return StatusCode(500, new { message = "An error occurred while generating the Excel file.", error = ex.Message });
             }
         }
 
@@ -405,7 +423,6 @@ namespace aairos.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
-
 
         // GET: api/sensor_data/date/{date}/device/{deviceId}
         [HttpGet("date/{date}/device/{deviceId}")]
