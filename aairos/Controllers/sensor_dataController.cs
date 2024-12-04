@@ -7,6 +7,9 @@ using aairos.Services;
 using OfficeOpenXml;
 using System.IO;
 using MySqlConnector;
+using Microsoft.Data.SqlClient;
+using MySql.Data.MySqlClient;
+using Google.Protobuf.WellKnownTypes;
 
 namespace aairos.Controllers
 {
@@ -14,14 +17,12 @@ namespace aairos.Controllers
     [ApiController]
     public class sensor_dataController : ControllerBase
     {
-        // This is for logging.
-/*        private readonly FileLoggerService _logger;
-*/        private readonly sensor_dataContext _context;
+        
+        private readonly sensor_dataContext _context;
 
         public sensor_dataController(sensor_dataContext context, FileLoggerService logger)
         {
-/*            _logger = logger;
-*/            _context = context;
+            _context = context;
         }
 
         // GET: api/sensor_data
@@ -42,9 +43,6 @@ namespace aairos.Controllers
                     createdDateTime = s.createdDateTime,
                 })
                 .ToListAsync();
-
-/*            await _logger.LogAsync($"GET: api/sensor_data returned {data.Count} records.");
-*/
             return Ok(data);
         }
 
@@ -86,33 +84,6 @@ namespace aairos.Controllers
 
         }
 
-        // GET: api/sensor_data/profile/{userProfileId}/device/{deviceId}
-        /*[HttpGet("profile/{userProfileId}/device/{deviceId}")]
-        public async Task<ActionResult<IEnumerable<SensorDataDto>>> GetSensorDataByuserProfileIdAndDeviceId(int userProfileId, int deviceId)
-        {
-            var data = await (from sd in _context.sensor_data
-                              join ud in _context.UserDevice on sd.deviceId equals ud.deviceId
-                              where ud.userProfileId == userProfileId && sd.deviceId == deviceId
-                              orderby sd.timestamp descending
-                              select new SensorDataDto
-                              {
-                                  id = sd.id,
-                                  sensor1_value = sd.sensor1_value,
-                                  sensor2_value = sd.sensor2_value,
-                                  deviceId = sd.deviceId,
-                                  solenoidValveStatus = sd.solenoidValveStatus ? "On" : "Off",
-                                  timestamp = sd.timestamp,
-                                  createdDateTime = sd.createdDateTime
-                              }).ToListAsync();
-
-            if (data == null || !data.Any())
-            {
-                return NotFound();
-            }
-
-            return Ok(data);
-        }*/
-
         // GET: api/GetUniqueDeviceIds
         [HttpGet("deviceId")]
         public async Task<ActionResult<IEnumerable<object>>> GetUniqueDeviceIds()
@@ -147,12 +118,9 @@ namespace aairos.Controllers
 
             if (!data.Any())
             {
-/*                await _logger.LogAsync($"GET: api/sensor_data/device/{deviceId} returned NotFound.");
-*/                return NotFound();
+                return NotFound();
             }
-
-            /*            await _logger.LogAsync($"GET: api/sensor_data/device/{deviceId} returned {data.Count} records.");
-            */            return Ok(data);
+            return Ok(data);
         }
 
         // GET api/sensor_data/5
@@ -175,12 +143,9 @@ namespace aairos.Controllers
 
             if (sensorData == null)
             {
-/*                await _logger.LogAsync($"GET: api/sensor_data/{id} returned NotFound.");
-*/                return NotFound();
+                return NotFound();
             }
-
-/*            await _logger.LogAsync($"GET: api/sensor_data/{id} returned a record.");
-*/            return Ok(sensorData);
+            return Ok(sensorData);
         }
 
         // POST api/sensor_data
@@ -201,8 +166,7 @@ namespace aairos.Controllers
                 createdDateTime = value.createdDateTime,
             };
 
-/*            await _logger.LogAsync($"POST: api/sensor_data created a new record with ID {value.id}.");
-*/            return CreatedAtAction(nameof(GetSensorData), new { id = value.id }, sensorDataDto);
+            return CreatedAtAction(nameof(GetSensorData), new { id = value.id }, sensorDataDto);
         }
 
         // PUT api/sensor_data/5
@@ -211,8 +175,7 @@ namespace aairos.Controllers
         {
             if (id != value.id)
             {
-/*                await _logger.LogAsync($"PUT: api/sensor_data/{id} returned BadRequest due to ID mismatch.");
-*/                return BadRequest();
+                return BadRequest();
             }
 
             _context.Entry(value).State = EntityState.Modified;
@@ -220,19 +183,16 @@ namespace aairos.Controllers
             try
             {
                 await _context.SaveChangesAsync();
-/*                await _logger.LogAsync($"PUT: api/sensor_data/{id} updated successfully.");
-*/            }
+            }
             catch (DbUpdateConcurrencyException)
             {
                 if (!SensorDataExists(id))
                 {
-/*                    await _logger.LogAsync($"PUT: api/sensor_data/{id} returned NotFound during concurrency check.");
-*/                    return NotFound();
+                    return NotFound();
                 }
                 else
                 {
-/*                    await _logger.LogAsync($"PUT: api/sensor_data/{id} encountered a concurrency exception.");
-*/                    throw;
+                    throw;
                 }
             }
 
@@ -246,15 +206,13 @@ namespace aairos.Controllers
             var sensorData = await _context.sensor_data.FindAsync(id);
             if (sensorData == null)
             {
-/*                await _logger.LogAsync($"DELETE: api/sensor_data/{id} returned NotFound.");
-*/                return NotFound();
+                return NotFound();
             }
 
             _context.sensor_data.Remove(sensorData);
             await _context.SaveChangesAsync();
 
-/*            await _logger.LogAsync($"DELETE: api/sensor_data/{id} deleted successfully.");
-*/            return NoContent();
+            return NoContent();
         }
 
         // GET: api/sensor_data/device/{deviceId}/sensor1
@@ -318,31 +276,56 @@ namespace aairos.Controllers
                 // Increase the command timeout (default is 30 seconds)
                 _context.Database.SetCommandTimeout(180); // Set the timeout to 3 minutes
 
-                // Fetch data from the database
-                var data = await (from sd in _context.sensor_data.AsNoTracking()
-                                  join ud in _context.UserDevice.AsNoTracking() on sd.deviceId equals ud.deviceId
-                                  join up in _context.UserProfile.AsNoTracking() on ud.userProfileId equals up.userProfileId
-                                  where ud.userProfileId == userProfileId
-                                        && sd.deviceId == deviceId
-                                        && sd.timestamp >= startDate
-                                        && sd.timestamp <= endDate
-                                  select new
-                                  {
-                                       sd.id,
-                                      Username = $"{up.FirstName} {up.MiddleName} {up.LastName}".Trim(),
-                                      sd.deviceId,
-                                      sd.sensor1_value,
-                                      sd.sensor2_value,
-                                      SolenoidValveStatus = sd.solenoidValveStatus ? "On" : "Off",
-                                      sd.timestamp
-                                  }).ToListAsync();
+                // Define the SQL query to retrieve necessary data
+                string query = @"
+            SELECT 
+                sd.Id AS Id,
+                CONCAT(up.FirstName, ' ', up.MiddleName, ' ', up.LastName) AS Username,
+                sd.deviceId AS DeviceID,
+                sd.sensor1_value AS sensor1_value,
+                sd.sensor2_value AS sensor2_value,
+                CASE 
+                    WHEN sd.solenoidValveStatus = 1 THEN 'On' 
+                    ELSE 'Off' 
+                END AS SolenoidValveStatus,
+                DATE_FORMAT(sd.timestamp, '%Y-%m-%d %H:%i:%s') AS CreatedDateTime
+            FROM 
+                sensor_data sd
+            JOIN 
+                UserDevice ud ON sd.deviceId = ud.deviceId
+            JOIN 
+                UserProfile up ON ud.userProfileId = up.userProfileId
+            WHERE 
+                ud.userProfileId = @userProfileId AND
+                sd.deviceId = @deviceId AND
+                sd.timestamp >= @startDate AND
+                sd.timestamp <= @endDate";
+
+                // Use MySqlParameter for parameterized queries
+                var data = await _context.sensor_data
+                    .FromSqlRaw(query,
+                        new MySqlConnector.MySqlParameter("@userProfileId", userProfileId),
+                        new MySqlConnector.MySqlParameter("@deviceId", deviceId),
+                        new MySqlConnector.MySqlParameter("@startDate", startDate),
+                        new MySqlConnector.MySqlParameter("@endDate", endDate))
+                    .Select(sd => new
+                    {
+                        Id = sd.id,
+                        Username = sd.username,
+                        DeviceID = sd.deviceId,
+                        sensor1value = sd.sensor1_value,
+                        sensor2value = sd.sensor2_value,
+                        SolenoidValveStatus = sd.solenoidValveStatus ? "On" : "Off",
+                        CreatedDateTime = sd.createdDateTime // This is now a string in the format yyyy-MM-dd HH:mm:ss
+                    })
+                    .ToListAsync();
 
                 if (!data.Any())
                 {
                     return NotFound(new { message = "No data found for the specified filters." });
                 }
 
-                // Generate Excel file
+                // Stream the Excel file instead of loading it entirely into memory
                 using var package = new ExcelPackage();
                 var worksheet = package.Workbook.Worksheets.Add("Sensor Data");
 
@@ -358,18 +341,18 @@ namespace aairos.Controllers
                 for (int i = 0; i < data.Count; i++)
                 {
                     worksheet.Cells[i + 2, 1].Value = data[i].Username;
-                    worksheet.Cells[i + 2, 2].Value = data[i].deviceId;
-                    worksheet.Cells[i + 2, 3].Value = data[i].sensor1_value;
-                    worksheet.Cells[i + 2, 4].Value = data[i].sensor2_value;
+                    worksheet.Cells[i + 2, 2].Value = data[i].DeviceID;
+                    worksheet.Cells[i + 2, 3].Value = data[i].sensor1value;
+                    worksheet.Cells[i + 2, 4].Value = data[i].sensor2value;
                     worksheet.Cells[i + 2, 5].Value = data[i].SolenoidValveStatus;
-                    worksheet.Cells[i + 2, 6].Value = data[i].timestamp.ToString("yyyy-MM-dd HH:mm:ss");
+                    worksheet.Cells[i + 2, 6].Value = data[i].CreatedDateTime; // This is now a formatted string
                 }
 
                 // Format as table
                 worksheet.Cells[1, 1, data.Count + 1, 6].AutoFitColumns();
                 worksheet.Cells[1, 1, 1, 6].Style.Font.Bold = true;
 
-                // Convert to a byte array
+                // Stream the result to the client
                 var excelData = package.GetAsByteArray();
 
                 // Return as a file download
