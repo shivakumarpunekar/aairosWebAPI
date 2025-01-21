@@ -44,7 +44,6 @@ namespace aairos.Controllers
             return Ok(userDeviceDtos);
         }
 
-
         // GET api/<userdevicesController>/5
         [HttpGet("{id}")]
         public async Task<ActionResult<UserDeviceDto>> Getuserdevice(int id)
@@ -69,7 +68,6 @@ namespace aairos.Controllers
 
             return Ok(userDeviceDto);
         }
-
 
         // GET api/<userdevicesController>/byProfile/{userProfileId}
         [HttpGet("byProfile/{userProfileId}")]
@@ -98,9 +96,6 @@ namespace aairos.Controllers
             return Ok(userDeviceDtos);
         }
 
-
-
-
         // POST api/<userdevicesController>
         [HttpPost]
         public async Task<ActionResult<UserDeviceDto>> Postuserdevice([FromBody] UserDeviceDto userDeviceDto)
@@ -128,7 +123,6 @@ namespace aairos.Controllers
 
             return CreatedAtAction(nameof(Getuserdevice), new { id = userDevice.userDeviceId }, userDeviceDto);
         }
-
 
         // PUT api/<userdevicesController>/5
         [HttpPut("{id}")]
@@ -229,11 +223,9 @@ namespace aairos.Controllers
             return NoContent(); // Indicate success
         }
 
-
         private bool userdeviceExists(int id)
         {
             return _userdeviceContext.UserDevice.Any(e => e.userDeviceId == id);
         }
     }
 }
-        

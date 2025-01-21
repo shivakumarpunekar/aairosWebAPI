@@ -10,26 +10,18 @@ namespace aairos.Controllers
     [ApiController]
     public class userprofilesController : ControllerBase
     {
-        //This is a Log
-/*        private readonly FileLoggerService _logger;
-*/        private readonly userprofileContext _context;
+        private readonly userprofileContext _context;
 
         public userprofilesController(userprofileContext context, FileLoggerService logger)
         {
-/*            _logger = logger;
-*/            _context = context;
+            _context = context;
         }
 
         // GET: api/userprofiles
         [HttpGet]
         public async Task<ActionResult<IEnumerable<userprofile>>> Getuserprofile()
         {
-            /*return await  _context.UserProfile.ToListAsync();*/
-
             var userprofiles = await _context.UserProfile.ToListAsync();
-
-/*            await _logger.LogAsync($"GET: api/userprofiles returned {userprofiles.Count} records.");
-*/
             return userprofiles;
         }
 
@@ -49,8 +41,6 @@ namespace aairos.Controllers
 
             return Ok(userprofiles);
         }
-
-
 
         //This is a guId GET Methode
         [HttpGet("byGuId/{guId}")]
@@ -90,7 +80,6 @@ namespace aairos.Controllers
 */            return userprofile;
         }
 
-
         // GET: api/userprofiles/registrationsSummary
         [HttpGet("registrationsSummary")]
         public async Task<ActionResult<IEnumerable<RegistrationSummary>>> GetRegistrationsSummary()
@@ -113,8 +102,6 @@ namespace aairos.Controllers
             public DateTime CreatedDate { get; set; }
             public int Count { get; set; }
         }
-
-
 
         // PUT: api/userprofiles/5
         [HttpPut("{id}")]
@@ -166,34 +153,56 @@ namespace aairos.Controllers
             return NoContent();
         }
 
-
         // POST: api/userprofiles
         [HttpPost]
         public async Task<ActionResult<userprofile>> Postuserprofile(userprofile userprofile)
         {
-            // Check if UserName or MobileNumber already exists
+            // Validate that UserName and Password are provided
+            if (string.IsNullOrEmpty(userprofile.UserName) || string.IsNullOrEmpty(userprofile.Password))
+            {
+                return BadRequest("UserName and Password are required.");
+            }
+
+            // Check if the UserName or MobileNumber already exists in userprofile
             var existingUserName = await _context.UserProfile.AnyAsync(u => u.UserName == userprofile.UserName);
             var existingMobileNumber = await _context.UserProfile.AnyAsync(u => u.MobileNumber == userprofile.MobileNumber);
 
             if (existingUserName)
             {
-/*                await _logger.LogAsync("POST: api/userprofiles returned Conflict due to existing UserName.");
-*/                return Conflict(new { message = "UserName already exists." });
+                return Conflict(new { message = "UserName already exists." });
             }
 
             if (existingMobileNumber)
             {
-/*                await _logger.LogAsync("POST: api/userprofiles returned Conflict due to existing MobileNumber.");
-*/                return Conflict(new { message = "MobileNumber already exists." });
+                return Conflict(new { message = "MobileNumber already exists." });
             }
 
-            userprofile.CreatedDate = DateTime.UtcNow;
+            // Create a new Login entry
+            var login = new Login
+            {
+                UserName = userprofile.UserName,
+                Password = userprofile.Password,
+                IsAdmin = false // or set based on your logic
+            };
 
+            _context.Login.Add(login);
+            await _context.SaveChangesAsync();
+
+            // Use the generated LoginId as the userProfileId
+            userprofile.userProfileId = login.LoginId;
+            userprofile.CreatedDate = DateTime.UtcNow;
+            userprofile.UpdatedDate = DateTime.UtcNow;
+
+            // Insert into userprofile table
             _context.UserProfile.Add(userprofile);
             await _context.SaveChangesAsync();
 
-/*            await _logger.LogAsync($"POST: api/userprofiles created a new user profile with ID {userprofile.userProfileId}.");
-*/            return CreatedAtAction(nameof(Getuserprofile), new { id = userprofile.userProfileId }, userprofile);
+            // Update the Login entry's UserProfileId field
+            login.userProfileId = userprofile.userProfileId;
+            _context.Entry(login).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(Getuserprofile), new { id = userprofile.userProfileId }, userprofile);
         }
 
         // DELETE: api/userprofiles/5

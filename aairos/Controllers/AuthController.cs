@@ -10,14 +10,12 @@ namespace aairos.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-/*        private readonly FileLoggerService _logger;
-*/        private readonly LoginContext _context;
+        private readonly LoginContext _context;
         private readonly IConfiguration _configuration;
 
         public AuthController(LoginContext context, IConfiguration configuration, FileLoggerService logger)
         {
-/*            _logger = logger;
-*/            _context = context;
+            _context = context;
             _configuration = configuration;
         }
 
@@ -29,12 +27,10 @@ namespace aairos.Controllers
 
             if (user == null)
             {
-/*                await _logger.LogAsync($"GET: api/Auth/login/{loginId} - User not found.");
-*/                return NotFound("User not found");
+                return NotFound("User not found");
             }
 
-/*            await _logger.LogAsync($"GET: api/Auth/login/{loginId} - userProfileId: {user.userProfileId}.");
-*/            return Ok(new { userProfileId = user.userProfileId });
+            return Ok(new { userProfileId = user.userProfileId });
         }
 
         // This is a login fetch method by entering username and password
@@ -43,20 +39,17 @@ namespace aairos.Controllers
         {
             if (login == null || string.IsNullOrEmpty(login.Username) || string.IsNullOrEmpty(login.Password))
             {
-/*                await _logger.LogAsync("POST: api/Auth/login - Invalid request.");
-*/                return BadRequest("Invalid request");
+                return BadRequest("Invalid request");
             }
 
             var user = await _context.Login.FirstOrDefaultAsync(u => u.UserName == login.Username && u.Password == login.Password);
 
             if (user == null)
             {
-/*                await _logger.LogAsync($"POST: api/Auth/login - Unauthorized attempt for username: {login.Username}.");
-*/                return Unauthorized();
+                return Unauthorized();
             }
 
-/*            await _logger.LogAsync($"POST: api/Auth/login - Successful login for username: {login.Username}, loginId: {user.LoginId}, IsAdmin: {user.IsAdmin}.");
-*/            return Ok(new
+            return Ok(new
             {
                 loginId = user.LoginId,
                 IsAdmin = user.IsAdmin,
@@ -70,29 +63,41 @@ namespace aairos.Controllers
         {
             if (newUser == null || string.IsNullOrEmpty(newUser.Username) || string.IsNullOrEmpty(newUser.Password))
             {
-/*                await _logger.LogAsync("POST: api/Auth/register - Invalid request.");
-*/                return BadRequest("Invalid request");
+                return BadRequest("Invalid request");
             }
 
+            // Check if username already exists in the Login table
             var existingUser = await _context.Login.FirstOrDefaultAsync(u => u.UserName == newUser.Username);
             if (existingUser != null)
             {
-/*                await _logger.LogAsync($"POST: api/Auth/register - Username already exists: {newUser.Username}.");
-*/                return BadRequest("Username already exists");
+                return BadRequest("Username already exists");
             }
 
-            var user = new Login
+            // Create a new Login entry
+            var login = new Login
             {
                 UserName = newUser.Username,
                 Password = newUser.Password,
-                IsAdmin = newUser.IsAdmin 
+                IsAdmin = newUser.IsAdmin
             };
 
-            _context.Login.Add(user);
+            _context.Login.Add(login);
             await _context.SaveChangesAsync();
 
-/*            await _logger.LogAsync($"POST: api/Auth/register - User registered successfully, loginId: {user.LoginId}.");
-*/            return Ok(new { message = "User registered successfully", loginId = user.LoginId });
+            // Create a corresponding userprofile entry
+            var userProfile = new userprofile
+            {
+                userProfileId = login.LoginId, // Set UserProfileId same as LoginId
+                UserName = newUser.Username,
+                Password = newUser.Password,
+                CreatedDate = DateTime.UtcNow,
+                UpdatedDate = DateTime.UtcNow
+            };
+
+            _context.userprofile.Add(userProfile);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "User registered successfully", loginId = login.LoginId });
         }
 
         // This is a PUT method for login
@@ -101,16 +106,14 @@ namespace aairos.Controllers
         {
             if (updatedUser == null || string.IsNullOrEmpty(updatedUser.Username) || string.IsNullOrEmpty(updatedUser.Password))
             {
-/*                await _logger.LogAsync("PUT: api/Auth/update - Invalid request.");
-*/                return BadRequest("Invalid request");
+                return BadRequest("Invalid request");
             }
 
             var user = await _context.Login.FindAsync(LoginId);
 
             if (user == null)
             {
-/*                await _logger.LogAsync($"PUT: api/Auth/update/{LoginId} - User not found.");
-*/                return NotFound("User not found");
+                return NotFound("User not found");
             }
 
             user.UserName = updatedUser.Username;
@@ -120,37 +123,13 @@ namespace aairos.Controllers
             _context.Login.Update(user);
             await _context.SaveChangesAsync();
 
-/*            await _logger.LogAsync($"PUT: api/Auth/update/{LoginId} - User updated successfully.");
-*/            return Ok(new { message = "User updated successfully", loginId = user.LoginId });
+            return Ok(new { message = "User updated successfully", loginId = user.LoginId });
         }
 
         private bool VerifyPassword(string password, string hashedPassword)
         {
             return password == hashedPassword;
         }
-
-        /* private string GenerateJwtToken(int loginId, string username)
-        {
-            var secretKey = _configuration["JwtSettings:SecretKey"];
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-
-            var claims = new[]
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, username),
-                new Claim("LoginId", loginId.ToString()),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            };
-
-            var token = new JwtSecurityToken(
-                issuer: "yourdomain.com",
-                audience: "yourdomain.com",
-                claims: claims,
-                expires: DateTime.Now.AddMinutes(30),
-                signingCredentials: credentials);
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }*/
     }
 
     public class UserLogin

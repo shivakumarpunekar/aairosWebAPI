@@ -20,5 +20,7 @@
         public string? Pincode { get; set; }
         public string? Email { get; set; }
 
+        // Foreign key
+        public Login? Login { get; set; }
     }
 }
