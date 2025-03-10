@@ -6,9 +6,6 @@ using aairos.Dto;
 using aairos.Services;
 using OfficeOpenXml;
 using System.IO;
-using System.Text;
-using System.Globalization;
-using System.Drawing.Printing;
 
 namespace aairos.Controllers
 {
@@ -16,14 +13,12 @@ namespace aairos.Controllers
     [ApiController]
     public class sensor_dataController : ControllerBase
     {
-        // This is for logging.
-/*        private readonly FileLoggerService _logger;
-*/        private readonly sensor_dataContext _context;
+        
+        private readonly sensor_dataContext _context;
 
         public sensor_dataController(sensor_dataContext context, FileLoggerService logger)
         {
-/*            _logger = logger;
-*/            _context = context;
+            _context = context;
         }
 
         // GET: api/sensor_data
@@ -44,9 +39,6 @@ namespace aairos.Controllers
                     createdDateTime = s.createdDateTime,
                 })
                 .ToListAsync();
-
-/*            await _logger.LogAsync($"GET: api/sensor_data returned {data.Count} records.");
-*/
             return Ok(data);
         }
 
@@ -122,12 +114,9 @@ namespace aairos.Controllers
 
             if (!data.Any())
             {
-/*                await _logger.LogAsync($"GET: api/sensor_data/device/{deviceId} returned NotFound.");
-*/                return NotFound();
+                return NotFound();
             }
-
-            /*            await _logger.LogAsync($"GET: api/sensor_data/device/{deviceId} returned {data.Count} records.");
-            */            return Ok(data);
+            return Ok(data);
         }
 
         // GET api/sensor_data/5
@@ -150,12 +139,9 @@ namespace aairos.Controllers
 
             if (sensorData == null)
             {
-/*                await _logger.LogAsync($"GET: api/sensor_data/{id} returned NotFound.");
-*/                return NotFound();
+                return NotFound();
             }
-
-/*            await _logger.LogAsync($"GET: api/sensor_data/{id} returned a record.");
-*/            return Ok(sensorData);
+            return Ok(sensorData);
         }
 
         // POST api/sensor_data
@@ -176,8 +162,7 @@ namespace aairos.Controllers
                 createdDateTime = value.createdDateTime,
             };
 
-/*            await _logger.LogAsync($"POST: api/sensor_data created a new record with ID {value.id}.");
-*/            return CreatedAtAction(nameof(GetSensorData), new { id = value.id }, sensorDataDto);
+            return CreatedAtAction(nameof(GetSensorData), new { id = value.id }, sensorDataDto);
         }
 
         // PUT api/sensor_data/5
@@ -186,8 +171,7 @@ namespace aairos.Controllers
         {
             if (id != value.id)
             {
-/*                await _logger.LogAsync($"PUT: api/sensor_data/{id} returned BadRequest due to ID mismatch.");
-*/                return BadRequest();
+                return BadRequest();
             }
 
             _context.Entry(value).State = EntityState.Modified;
@@ -195,19 +179,16 @@ namespace aairos.Controllers
             try
             {
                 await _context.SaveChangesAsync();
-/*                await _logger.LogAsync($"PUT: api/sensor_data/{id} updated successfully.");
-*/            }
+            }
             catch (DbUpdateConcurrencyException)
             {
                 if (!SensorDataExists(id))
                 {
-/*                    await _logger.LogAsync($"PUT: api/sensor_data/{id} returned NotFound during concurrency check.");
-*/                    return NotFound();
+                    return NotFound();
                 }
                 else
                 {
-/*                    await _logger.LogAsync($"PUT: api/sensor_data/{id} encountered a concurrency exception.");
-*/                    throw;
+                    throw;
                 }
             }
 
@@ -221,15 +202,13 @@ namespace aairos.Controllers
             var sensorData = await _context.sensor_data.FindAsync(id);
             if (sensorData == null)
             {
-/*                await _logger.LogAsync($"DELETE: api/sensor_data/{id} returned NotFound.");
-*/                return NotFound();
+                return NotFound();
             }
 
             _context.sensor_data.Remove(sensorData);
             await _context.SaveChangesAsync();
 
-/*            await _logger.LogAsync($"DELETE: api/sensor_data/{id} deleted successfully.");
-*/            return NoContent();
+            return NoContent();
         }
 
         // GET: api/sensor_data/device/{deviceId}/sensor1
@@ -282,106 +261,57 @@ namespace aairos.Controllers
             return Ok(data);
         }
 
-        /*[HttpGet("export")]
-        public async Task<IActionResult> ExportToCsv(int userProfileId, int deviceId, DateTime startDate, DateTime endDate)
-        {
-            var data = await _context.sensor_data
-                .Join(_context.UserDevice, sd => sd.deviceId, ud => ud.deviceId, (sd, ud) => new { sd, ud })
-                .Join(_context.UserProfile, combined => combined.ud.userProfileId, up => up.userProfileId, (combined, up) => new
-                {
-                    Username = up.FirstName + " " + (up.MiddleName ?? "") + " " + up.LastName,
-                    combined.sd.deviceId,
-                    combined.sd.sensor1_value,
-                    combined.sd.sensor2_value,
-                    SolenoidValveStatus = combined.sd.solenoidValveStatus ? "On" : "Off",
-                    combined.sd.timestamp,
-                    up.userProfileId
-                })
-                .Where(record => record.deviceId == deviceId && record.userProfileId == userProfileId)
-                .Take(1000000)
-                .ToListAsync();
-
-            // Filter in-memory after fetching the data using timestamp
-            var filteredData = data
-                .Where(record =>
-                    record.timestamp >= startDate && record.timestamp <= endDate)
-                .ToList();
-
-            var csv = new StringBuilder();
-            csv.AppendLine("Username,DeviceID,Sensor1Value,Sensor2Value,SolenoidValveStatus,Timestamp");
-
-            foreach (var row in filteredData)
-            {
-                var formattedDate = row.timestamp.ToString("dd-MM-yyyy HH:mm:ss");
-                csv.AppendLine($"{row.Username},{row.deviceId},{row.sensor1_value},{row.sensor2_value},{row.SolenoidValveStatus},{formattedDate}");
-            }
-
-            var bytes = Encoding.UTF8.GetBytes(csv.ToString());
-
-            // Include deviceId in the file name
-            string fileName = $"sensor_data_{deviceId}.csv";
-
-            return File(bytes, "text/csv", fileName);
-        }*/
 
         [HttpGet("export")]
-        public async Task<IActionResult> ExportToCsv(int userProfileId, int deviceId, DateTime startDate, DateTime endDate)
+        public async Task<IActionResult> ExportToExcel([FromQuery] int userProfileId, [FromQuery] int deviceId, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
         {
-            try
+            var sensorData = await (from sd in _context.sensor_data
+                                    join ud in _context.UserDevice on sd.deviceId equals ud.deviceId
+                                    join up in _context.UserProfile on ud.userProfileId equals up.userProfileId
+                                    where ud.userProfileId == userProfileId && sd.deviceId == deviceId
+                                    && sd.timestamp >= startDate && sd.timestamp <= endDate
+                                    select new
+                                    {
+                                        Username = $"{up.FirstName} {up.MiddleName} {up.LastName}",
+                                        sd.deviceId,
+                                        sd.sensor1_value,
+                                        sd.sensor2_value,
+                                        solenoidValveStatus = sd.solenoidValveStatus ? "On" : "Off",
+                                        sd.createdDateTime
+                                    }).ToListAsync();
+
+            if (!sensorData.Any())
             {
-                // Fetch relevant data
-                var data = await _context.sensor_data
-                    .Join(_context.UserDevice, sd => sd.deviceId, ud => ud.deviceId, (sd, ud) => new { sd, ud })
-                    .Join(_context.UserProfile, combined => combined.ud.userProfileId, up => up.userProfileId, (combined, up) => new
-                    {
-                        Username = up.FirstName + " " + (up.MiddleName ?? "") + " " + up.LastName,
-                        combined.sd.deviceId,
-                        combined.sd.sensor1_value,
-                        combined.sd.sensor2_value,
-                        SolenoidValveStatus = combined.sd.solenoidValveStatus ? "On" : "Off",
-                        combined.sd.timestamp,
-                        up.userProfileId
-                    })
-                    .Where(record => record.deviceId == deviceId && record.userProfileId == userProfileId)
-                    .ToListAsync();
-
-                // Filter data within the provided date and time range
-                var filteredData = data
-                    .Where(record =>
-                        record.timestamp >= startDate && record.timestamp <= endDate)
-                    .OrderBy(record => record.timestamp) // Order by timestamp
-                    .ToList();
-
-                // Handle case where no data is found
-                if (!filteredData.Any())
-                {
-                    return BadRequest("No data found for the specified filters.");
-                }
-
-                // Create CSV content
-                var csv = new StringBuilder();
-                csv.AppendLine("Username,DeviceID,Sensor1Value,Sensor2Value,SolenoidValveStatus,Timestamp");
-
-                foreach (var row in filteredData)
-                {
-                    var formattedDate = row.timestamp.ToString("dd-MM-yyyy HH:mm:ss");
-                    csv.AppendLine($"{row.Username},{row.deviceId},{row.sensor1_value},{row.sensor2_value},{row.SolenoidValveStatus},{formattedDate}");
-                }
-
-                // Convert CSV content to byte array
-                var bytes = Encoding.UTF8.GetBytes(csv.ToString());
-
-                // Include deviceId and timestamp in the file name for uniqueness
-                string fileName = $"sensor_data_{deviceId}_{DateTime.Now:yyyyMMddHHmmss}.csv";
-
-                // Return CSV file
-                return File(bytes, "text/csv", fileName);
+                return NotFound();
             }
-            catch (Exception ex)
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+            using (var package = new ExcelPackage())
             {
-                // Log error and return generic failure message
-                Console.WriteLine($"Error generating CSV: {ex.Message}");
-                return StatusCode(500, "An error occurred while generating the CSV file.");
+                var worksheet = package.Workbook.Worksheets.Add("Sensor Data");
+                worksheet.Cells["A1"].Value = "Username";
+                worksheet.Cells["B1"].Value = "Device ID";
+                worksheet.Cells["C1"].Value = "Sensor 1 Value";
+                worksheet.Cells["D1"].Value = "Sensor 2 Value";
+                worksheet.Cells["E1"].Value = "Solenoid Valve Status";
+                worksheet.Cells["F1"].Value = "Created DateTime";
+
+                var row = 2;
+                foreach (var data in sensorData)
+                {
+                    worksheet.Cells[$"A{row}"].Value = data.Username;
+                    worksheet.Cells[$"B{row}"].Value = data.deviceId;
+                    worksheet.Cells[$"C{row}"].Value = data.sensor1_value;
+                    worksheet.Cells[$"D{row}"].Value = data.sensor2_value;
+                    worksheet.Cells[$"E{row}"].Value = data.solenoidValveStatus;
+                    worksheet.Cells[$"F{row}"].Value = data.createdDateTime;
+                    row++;
+                }
+
+                var stream = new MemoryStream();
+                package.SaveAs(stream);
+                stream.Position = 0;
+                var fileName = $"SensorData_{DateTime.Now.ToString("yyyyMMdd_HHmmss")}.xlsx";
+                return File(stream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
             }
         }
 
@@ -427,7 +357,6 @@ namespace aairos.Controllers
                 return StatusCode(500, "Internal server error");
             }
         }
-
 
         // GET: api/sensor_data/date/{date}/device/{deviceId}
         [HttpGet("date/{date}/device/{deviceId}")]
