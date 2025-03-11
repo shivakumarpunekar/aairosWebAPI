@@ -3,6 +3,7 @@
     public class sensor_data
     {
         public int id {  get; set; }
+        public int userProfileId { get; set; }
         public int sensor1_value { get; set; }
         public int sensor2_value { get; set; }
         public int deviceId { get; set; }
