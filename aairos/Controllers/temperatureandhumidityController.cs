@@ -21,7 +21,9 @@ namespace aairos.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<temperatureandhumidityModel>>> GetAllThresholds()
         {
-            return await _context.temperatureandhumidityModel.ToListAsync();
+            return await _context.temperatureandhumidityModel
+                .OrderByDescending(t => t.created_at)
+                .ToListAsync();
         }
 
         // GET: api/T_H_Threshold/device/{device_id}
@@ -30,6 +32,7 @@ namespace aairos.Controllers
         {
             var thresholds = await _context.temperatureandhumidityModel
                 .Where(t => t.device_id == device_id)
+                .OrderByDescending(t => t.created_at)
                 .ToListAsync();
 
             if (thresholds == null || thresholds.Count == 0)
