@@ -8,27 +8,27 @@ namespace aairos.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class temp_hum_thresholdController : ControllerBase
+    public class temperatureandhumidityController : ControllerBase
     {
-        private readonly temp_hum_thresholdContext _context;
+        private readonly temperatureandhumidityContext _context;
 
-        public temp_hum_thresholdController(temp_hum_thresholdContext context)
+        public temperatureandhumidityController(temperatureandhumidityContext context)
         {
             _context = context;
         }
 
         // GET: api/T_H_Threshold
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<temp_hum_thresholdModel>>> GetAllThresholds()
+        public async Task<ActionResult<IEnumerable<temperatureandhumidityModel>>> GetAllThresholds()
         {
-            return await _context.temp_hum_thresholdModel.ToListAsync();
+            return await _context.temperatureandhumidityModel.ToListAsync();
         }
 
         // GET: api/T_H_Threshold/device/{device_id}
         [HttpGet("device/{device_id}")]
-        public async Task<ActionResult<IEnumerable<temp_hum_thresholdModel>>> GetThresholdsByDeviceId(int device_id)
+        public async Task<ActionResult<IEnumerable<temperatureandhumidityModel>>> GetThresholdsByDeviceId(int device_id)
         {
-            var thresholds = await _context.temp_hum_thresholdModel
+            var thresholds = await _context.temperatureandhumidityModel
                 .Where(t => t.device_id == device_id)
                 .ToListAsync();
 
@@ -42,11 +42,11 @@ namespace aairos.Controllers
 
         // POST: api/T_H_Threshold
         [HttpPost]
-        public async Task<ActionResult<temp_hum_thresholdModel>> CreateThreshold(temp_hum_thresholdModel model)
+        public async Task<ActionResult<temperatureandhumidityModel>> CreateThreshold(temperatureandhumidityModel model)
         {
             model.created_at = DateTime.UtcNow;
 
-            _context.temp_hum_thresholdModel.Add(model);
+            _context.temperatureandhumidityModel.Add(model);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetThresholdsByDeviceId), new { device_id = model.device_id }, model);
@@ -54,22 +54,22 @@ namespace aairos.Controllers
 
         // PUT: api/T_H_Threshold/{id}
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateThreshold(int id, temp_hum_thresholdModel updatedModel)
+        public async Task<IActionResult> UpdateThreshold(int id, temperatureandhumidityModel updatedModel)
         {
             if (id != updatedModel.id)
             {
                 return BadRequest("ID mismatch");
             }
 
-            var existingModel = await _context.temp_hum_thresholdModel.FindAsync(id);
+            var existingModel = await _context.temperatureandhumidityModel.FindAsync(id);
             if (existingModel == null)
             {
                 return NotFound($"Threshold with ID {id} not found.");
             }
 
             existingModel.device_id = updatedModel.device_id;
-            existingModel.sensor_type = updatedModel.sensor_type;
-            existingModel.severity = updatedModel.severity;
+            existingModel.temperature = updatedModel.temperature;
+            existingModel.humidity = updatedModel.humidity;
 
             _context.Entry(existingModel).State = EntityState.Modified;
             await _context.SaveChangesAsync();
@@ -81,13 +81,13 @@ namespace aairos.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteThreshold(int id)
         {
-            var model = await _context.temp_hum_thresholdModel.FindAsync(id);
+            var model = await _context.temperatureandhumidityModel.FindAsync(id);
             if (model == null)
             {
                 return NotFound($"Threshold with ID {id} not found.");
             }
 
-            _context.temp_hum_thresholdModel.Remove(model);
+            _context.temperatureandhumidityModel.Remove(model);
             await _context.SaveChangesAsync();
 
             return NoContent();

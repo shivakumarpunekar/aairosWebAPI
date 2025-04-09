@@ -43,7 +43,7 @@ builder.Services.AddAuthentication(options =>
 });
 
 // This is for temp_hum_thresholdContext connection
-builder.Services.AddDbContext<temp_hum_thresholdContext>(options =>
+builder.Services.AddDbContext<temperatureandhumidityContext>(options =>
     options.UseMySql(builder.Configuration.GetConnectionString("Defaltconnection"),
     new MySqlServerVersion(new Version(8, 0, 21))));
 
