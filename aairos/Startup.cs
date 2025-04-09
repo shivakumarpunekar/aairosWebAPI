@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using OfficeOpenXml;
+using System.Text.Json.Serialization;
 
 
 namespace aairos
@@ -62,7 +63,11 @@ namespace aairos
                     });
             });
 
-            services.AddControllers();
+            services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                });
 
 
 
@@ -136,6 +141,10 @@ namespace aairos
                 new MySqlServerVersion(new Version(8, 0, 21))));
 
             services.AddDbContext<historyvalvestatusContext>(options =>
+                options.UseMySql(Configuration.GetConnectionString("Defaltconnection"),
+                new MySqlServerVersion(new Version(8, 0, 21))));
+
+            services.AddDbContext<temp_hum_thresholdContext>(options =>
                 options.UseMySql(Configuration.GetConnectionString("Defaltconnection"),
                 new MySqlServerVersion(new Version(8, 0, 21))));
         }

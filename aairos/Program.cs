@@ -42,6 +42,11 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+// This is for temp_hum_thresholdContext connection
+builder.Services.AddDbContext<temp_hum_thresholdContext>(options =>
+    options.UseMySql(builder.Configuration.GetConnectionString("Defaltconnection"),
+    new MySqlServerVersion(new Version(8, 0, 21))));
+
 // This is for historyvalvestatusContext connection
 builder.Services.AddDbContext<historyvalvestatusContext>(options =>
     options.UseMySql(builder.Configuration.GetConnectionString("Defaltconnection"),
@@ -94,7 +99,11 @@ builder.Services.AddDbContext<LoginContext>(options =>
 
 
 builder.Services.AddAuthorization();
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
