@@ -97,5 +97,38 @@ namespace aairos.Controllers
 
             return NoContent();
         }
+
+        // GET: api/T_H_Threshold/device/{device_id}/download?startDate=2025-04-09&endDate=2025-04-10
+        [HttpGet("device/{device_id}/download")]
+        public async Task<IActionResult> DownloadThresholdCsv(int device_id, [FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        {
+            // Fix start to 00:00 and end to 23:59:59
+            DateTime fromDate = startDate.Date; // 00:00:00
+            DateTime toDate = endDate.Date.AddHours(23).AddMinutes(59).AddSeconds(59); // 23:59:59
+
+            var thresholds = await _context.temperatureandhumidityModel
+                .Where(t => t.device_id == device_id && t.created_at >= fromDate && t.created_at <= toDate)
+                .OrderByDescending(t => t.created_at)
+                .ToListAsync();
+
+            if (thresholds == null || thresholds.Count == 0)
+            {
+                return NotFound($"No data found for device_id: {device_id} between {fromDate:yyyy-MM-dd HH:mm} and {toDate:yyyy-MM-dd HH:mm}");
+            }
+
+            var csv = new System.Text.StringBuilder();
+            csv.AppendLine("id,device_id,temperature,humidity,created_at");
+
+            foreach (var t in thresholds)
+            {
+                csv.AppendLine($"{t.id},{t.device_id},{t.temperature} °C,{t.humidity} %,{t.created_at:yyyy-MM-dd HH:mm:ss}");
+            }
+
+            var fileName = $"temperatureandhumidity_device_{device_id}_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+            var fileBytes = System.Text.Encoding.UTF8.GetBytes(csv.ToString());
+
+            return File(fileBytes, "text/csv", fileName);
+        }
+
     }
 }
