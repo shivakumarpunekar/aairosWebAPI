@@ -30,14 +30,16 @@ namespace aairos.Controllers
         [HttpGet("device/{device_id}")]
         public async Task<ActionResult<IEnumerable<temperatureandhumidityModel>>> GetThresholdsByDeviceId(int device_id)
         {
+            DateTime twoHoursAgo = DateTime.Now.AddHours(-2);
+
             var thresholds = await _context.temperatureandhumidityModel
-                .Where(t => t.device_id == device_id)
+                .Where(t => t.device_id == device_id && t.created_at >= twoHoursAgo)
                 .OrderByDescending(t => t.created_at)
                 .ToListAsync();
 
             if (thresholds == null || thresholds.Count == 0)
             {
-                return NotFound($"No thresholds found for device_id: {device_id}");
+                return NotFound($"No data found for device_id: {device_id}");
             }
 
             return thresholds;
@@ -67,7 +69,7 @@ namespace aairos.Controllers
             var existingModel = await _context.temperatureandhumidityModel.FindAsync(id);
             if (existingModel == null)
             {
-                return NotFound($"Threshold with ID {id} not found.");
+                return NotFound($"data with ID {id} not found.");
             }
 
             existingModel.device_id = updatedModel.device_id;
@@ -87,7 +89,7 @@ namespace aairos.Controllers
             var model = await _context.temperatureandhumidityModel.FindAsync(id);
             if (model == null)
             {
-                return NotFound($"Threshold with ID {id} not found.");
+                return NotFound($"data with ID {id} not found.");
             }
 
             _context.temperatureandhumidityModel.Remove(model);
